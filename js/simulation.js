@@ -4,7 +4,14 @@
  * Função pura: recebe o estado atual e o PRNG, devolvendo o novo estado sem mutações colaterais.
  */
 
-import { INDICATOR_DEFS, EVENTS_DATABASE, classifyPolitics } from './data.js';
+import {
+  INDICATOR_DEFS,
+  EVENTS_DATABASE,
+  classifyPolitics,
+  IDEOLOGICAL_PROBLEMS_DATABASE,
+  calculateNolanAffinity,
+  calculateIdeologicalIntensity
+} from './data.js';
 import { clamp } from './rng.js';
 
 // Calcula a distância euclidiana cartográfica entre duas cidades
@@ -72,13 +79,20 @@ export function createInitialGameState(cities, seed, citizenName) {
   // Calcula QoL e Atratividade iniciais para todas as cidades
   const initialCities = cities.map(city => {
     const qol = calculateQualityOfLife(city.indicators);
-    const updated = { ...city, qualityOfLife: qol };
+    const updated = {
+      ...city,
+      qualityOfLife: qol,
+      ideologicalCooldowns: city.ideologicalCooldowns || {},
+      familyCooldowns: city.familyCooldowns || {},
+      activeConditions: city.activeConditions || [],
+      ideologicalHistory: city.ideologicalHistory || []
+    };
     updated.attractiveness = calculateAttractiveness(updated);
     return updated;
   });
 
   return {
-    version: 1,
+    version: 2,
     seed: seed || 'HorizontesCivicos_2026',
     month: 1,
     year: 1,
@@ -184,8 +198,20 @@ export function advanceMonth(state, rng) {
     });
   }
 
-  // Limita as manchetes a no máximo 4 por mês no feed geral para não sobrecarregar
-  const curatedHeadlines = monthHeadlines.slice(0, 4);
+  // Limita as manchetes no feed geral: no máximo 4 por mês, com teto de até 3 problemas ideológicos em destaque
+  let ideologicalCount = 0;
+  const curatedHeadlines = [];
+  for (const h of monthHeadlines) {
+    if (h.isIdeological) {
+      if (ideologicalCount < 3) {
+        curatedHeadlines.push(h);
+        ideologicalCount++;
+      }
+    } else {
+      curatedHeadlines.push(h);
+    }
+    if (curatedHeadlines.length >= 4) break;
+  }
   const allHeadlines = [...curatedHeadlines, ...state.headlines].slice(0, 40);
 
   return {
@@ -208,64 +234,296 @@ function simulateSingleCityMonth(city, activeGlobalEvent, nextMonth, nextYear, r
   const cityEvents = [];
   let monthExplanation = '';
 
-  // 1. Aplicação de Evento Local (chance de ~12% de ocorrer um evento local neste mês)
-  let localEvent = null;
-  if (rng.next() < 0.12) {
-    const candidates = EVENTS_DATABASE.filter(ev => {
-      if (ev.isGlobal) return false;
-      const c = ev.conditions || {};
-      if (c.minEcon && oldInd.economy < c.minEcon) return false;
-      if (c.maxEcon && oldInd.economy > c.maxEcon) return false;
-      if (c.minJobs && oldInd.jobs < c.minJobs) return false;
-      if (c.maxJobs && oldInd.jobs > c.maxJobs) return false;
-      if (c.minSafety && oldInd.safety < c.minSafety) return false;
-      if (c.maxSafety && oldInd.safety > c.maxSafety) return false;
-      if (c.minHealth && oldInd.health < c.minHealth) return false;
-      if (c.maxHealth && oldInd.health > c.maxHealth) return false;
-      if (c.minEducation && oldInd.education < c.minEducation) return false;
-      if (c.maxHousing && oldInd.housing > c.maxHousing) return false;
-      if (c.minInfrastructure && oldInd.infrastructure < c.minInfrastructure) return false;
-      if (c.minCivicFreedom && city.civicFreedom < c.minCivicFreedom) return false;
-      if (c.maxCivicFreedom && city.civicFreedom > c.maxCivicFreedom) return false;
-      if (c.minTrust && oldInd.trust < c.minTrust) return false;
-      if (c.maxTrust && oldInd.trust > c.maxTrust) return false;
-      if (c.minStability && oldInd.stability < c.minStability) return false;
-      if (c.maxStability && oldInd.stability > c.maxStability) return false;
-      return true;
-    });
+  // A. Atualização dos Cooldowns de Problemas Ideológicos (meses restantes)
+  const nextIdeologicalCooldowns = { ...(city.ideologicalCooldowns || {}) };
+  for (const [evId, rem] of Object.entries(nextIdeologicalCooldowns)) {
+    if (rem > 1) {
+      nextIdeologicalCooldowns[evId] = rem - 1;
+    } else {
+      delete nextIdeologicalCooldowns[evId];
+    }
+  }
 
-    if (candidates.length > 0) {
-      localEvent = rng.choice(candidates);
-      cityEvents.push({
-        id: localEvent.id,
-        title: localEvent.title,
-        category: localEvent.category,
-        text: localEvent.narrative,
-        explanation: localEvent.explanation,
-        month: nextMonth,
-        year: nextYear
-      });
+  const nextFamilyCooldowns = { ...(city.familyCooldowns || {}) };
+  for (const [famId, rem] of Object.entries(nextFamilyCooldowns)) {
+    if (rem > 1) {
+      nextFamilyCooldowns[famId] = rem - 1;
+    } else {
+      delete nextFamilyCooldowns[famId];
+    }
+  }
 
+  // B. Processamento de Condições Persistentes Ativas (3 a 18 meses)
+  const remainingConditions = [];
+  const monthlyConditionEffects = {};
+  const delayedEffectsToApply = {};
+
+  for (const cond of (city.activeConditions || [])) {
+    // Acumula efeitos mensais
+    if (cond.monthlyEffects) {
+      for (const [k, v] of Object.entries(cond.monthlyEffects)) {
+        monthlyConditionEffects[k] = (monthlyConditionEffects[k] || 0) + v;
+      }
+    }
+
+    const nextMonths = (cond.remainingMonths ?? 1) - 1;
+    if (nextMonths <= 0) {
+      // Condição temporária encerrou: aplica efeitos atrasados e notícia de resolução
+      if (cond.delayedEffects) {
+        for (const [k, v] of Object.entries(cond.delayedEffects)) {
+          delayedEffectsToApply[k] = (delayedEffectsToApply[k] || 0) + v;
+        }
+      }
+
+      const resText = cond.resolutionNarrative || `A condição extraordinária decorrente de ${cond.title} foi normalizada na metrópole.`;
       monthHeadlines.push({
         month: nextMonth,
         year: nextYear,
         cityName: city.name,
-        title: localEvent.title,
-        category: localEvent.category,
-        text: localEvent.narrative
+        title: `Resolução: ${cond.title}`,
+        category: 'política',
+        text: resText,
+        isResolution: true
       });
 
-      monthExplanation = localEvent.explanation;
-
-      // Se for a cidade do jogador, adiciona ao diário pessoal
       if (city.id === playerCityId) {
         diaryEntries.unshift({
           month: nextMonth,
           year: nextYear,
           type: 'local',
-          title: `${city.name}: ${localEvent.title}`,
+          title: `${city.name}: Resolução de ${cond.title}`,
+          text: resText
+        });
+      }
+    } else {
+      remainingConditions.push({
+        ...cond,
+        remainingMonths: nextMonths
+      });
+    }
+  }
+
+  const updatedIdeologicalHistory = [...(city.ideologicalHistory || [])];
+
+  // C. Sorteio Unificado de Acontecimentos Locais (Padrão ou Problema Ideológico)
+  // O motor avalia a ocorrência com chance de ~13% ao mês
+  let localEvent = null;
+
+  if (rng.next() < 0.13) {
+    const candidateList = [];
+
+    // 1. Candidatos da base padrão EVENTS_DATABASE
+    for (const ev of EVENTS_DATABASE) {
+      if (ev.isGlobal) continue;
+      const c = ev.conditions || {};
+      if (c.minEcon && oldInd.economy < c.minEcon) continue;
+      if (c.maxEcon && oldInd.economy > c.maxEcon) continue;
+      if (c.minJobs && oldInd.jobs < c.minJobs) continue;
+      if (c.maxJobs && oldInd.jobs > c.maxJobs) continue;
+      if (c.minSafety && oldInd.safety < c.minSafety) continue;
+      if (c.maxSafety && oldInd.safety > c.maxSafety) continue;
+      if (c.minHealth && oldInd.health < c.minHealth) continue;
+      if (c.maxHealth && oldInd.health > c.maxHealth) continue;
+      if (c.minEducation && oldInd.education < c.minEducation) continue;
+      if (c.maxHousing && oldInd.housing > c.maxHousing) continue;
+      if (c.minInfrastructure && oldInd.infrastructure < c.minInfrastructure) continue;
+      if (c.minCivicFreedom && city.civicFreedom < c.minCivicFreedom) continue;
+      if (c.maxCivicFreedom && city.civicFreedom > c.maxCivicFreedom) continue;
+      if (c.minTrust && oldInd.trust < c.minTrust) continue;
+      if (c.maxTrust && oldInd.trust > c.maxTrust) continue;
+      if (c.minStability && oldInd.stability < c.minStability) continue;
+      if (c.maxStability && oldInd.stability > c.maxStability) continue;
+
+      candidateList.push({
+        item: ev,
+        weight: ev.weight || 10,
+        isIdeological: false
+      });
+    }
+
+    // 2. Candidatos da base IDEOLOGICAL_PROBLEMS_DATABASE
+    for (const prob of IDEOLOGICAL_PROBLEMS_DATABASE) {
+      // Respeita cooldown por evento específico
+      if (nextIdeologicalCooldowns[prob.id]) continue;
+      // Respeita cooldown por família de risco
+      if (nextFamilyCooldowns[prob.riskFamily]) continue;
+      // Não reativa condição já em curso
+      if (remainingConditions.some(rc => rc.eventId === prob.id)) continue;
+
+      // Condições de liberdade econômica e pessoal
+      const c = prob.conditions || {};
+      if (c.minEconFreedom && city.econFreedom < c.minEconFreedom) continue;
+      if (c.maxEconFreedom && city.econFreedom > c.maxEconFreedom) continue;
+      if (c.minPersonalFreedom && city.civicFreedom < c.minPersonalFreedom) continue;
+      if (c.maxPersonalFreedom && city.civicFreedom > c.maxPersonalFreedom) continue;
+
+      // Pré-requisito de escalada no histórico da cidade
+      if (c.requiresAnyHistory) {
+        const hasPrecursor = c.requiresAnyHistory.some(hId => updatedIdeologicalHistory.includes(hId));
+        if (!hasPrecursor) continue;
+      }
+
+      // Afinidade contínua baseada na distância euclidiana ao perfil de Nolan [0, 1]
+      const affinity = calculateNolanAffinity(city, prob.nolanProfile);
+      if (affinity < 0.10) continue;
+
+      // Intensidade ideológica
+      const intensity = calculateIdeologicalIntensity(city, prob.nolanProfile);
+
+      // Multiplicador de vulnerabilidade baseado nos indicadores materiais observados
+      let vulnMultiplier = 1.0;
+      const matchedFactorLabels = [];
+
+      for (const rf of (prob.riskFactors || [])) {
+        const val = oldInd[rf.field] ?? 50;
+        let isMatch = false;
+        if (rf.operator === '<' && val < rf.value) isMatch = true;
+        else if (rf.operator === '>' && val > rf.value) isMatch = true;
+        else if (rf.operator === '<=' && val <= rf.value) isMatch = true;
+        else if (rf.operator === '>=' && val >= rf.value) isMatch = true;
+
+        if (isMatch) {
+          vulnMultiplier *= (rf.multiplier || 1.25);
+          matchedFactorLabels.push(`${rf.label} (${Math.round(val)})`);
+        }
+      }
+
+      // Ponderação final: pesoBase × afinidade² × intensidade × vulnerabilidade × fator de calibração
+      // Calibração ajustada para ~20%-30% dos acontecimentos locais ao longo de simulações extensas
+      const CALIBRATION_FACTOR = 0.88;
+      const pesoFinal = (prob.weight || 8) * Math.pow(affinity, 2) * intensity * vulnMultiplier * CALIBRATION_FACTOR;
+
+      if (pesoFinal > 0.01) {
+        candidateList.push({
+          item: prob,
+          weight: pesoFinal,
+          isIdeological: true,
+          matchedFactors: matchedFactorLabels
+        });
+      }
+    }
+
+    // Sorteio ponderado determinístico via Mulberry32
+    if (candidateList.length > 0) {
+      let totalWeight = 0;
+      for (const cand of candidateList) {
+        totalWeight += cand.weight;
+      }
+
+      let pickThreshold = rng.next() * totalWeight;
+      let selectedCand = candidateList[candidateList.length - 1];
+
+      for (const cand of candidateList) {
+        pickThreshold -= cand.weight;
+        if (pickThreshold <= 0) {
+          selectedCand = cand;
+          break;
+        }
+      }
+
+      localEvent = selectedCand.item;
+
+      if (selectedCand.isIdeological) {
+        if (!updatedIdeologicalHistory.includes(localEvent.id)) {
+          updatedIdeologicalHistory.push(localEvent.id);
+        }
+
+        // Aplica cooldowns (mínimo 24 meses mesmo evento, 12 meses mesma família)
+        nextIdeologicalCooldowns[localEvent.id] = localEvent.cooldownMonths || 24;
+        nextFamilyCooldowns[localEvent.riskFamily] = 12;
+
+        // Se o evento possuir duração persistente (3 a 18 meses), registra na lista de condições ativas
+        if (localEvent.duration && localEvent.duration > 0) {
+          remainingConditions.push({
+            id: `${localEvent.id}_${nextMonth}_${nextYear}`,
+            eventId: localEvent.id,
+            title: localEvent.title,
+            remainingMonths: localEvent.duration,
+            monthlyEffects: localEvent.monthlyEffects || {},
+            delayedEffects: localEvent.delayedEffects || {},
+            resolutionNarrative: localEvent.resolutionNarrative
+          });
+        }
+
+        const factorsText = (selectedCand.matchedFactors && selectedCand.matchedFactors.length > 0)
+          ? selectedCand.matchedFactors.join(', ')
+          : 'vulnerabilidades institucionais observadas no período';
+
+        cityEvents.push({
+          id: localEvent.id,
+          type: 'ideologicalProblem',
+          category: localEvent.category || 'política',
+          nolanProfile: localEvent.nolanProfile,
+          riskFamily: localEvent.riskFamily,
+          severity: localEvent.severity || 'light',
+          title: localEvent.title,
+          text: localEvent.narrative,
+          immediateBenefit: localEvent.immediateBenefit || null,
+          duration: localEvent.duration || 0,
+          factorsText: `Fatores: ${factorsText}`,
+          explanation: localEvent.explanation,
+          effects: localEvent.effects || {},
+          month: nextMonth,
+          year: nextYear
+        });
+
+        monthHeadlines.push({
+          month: nextMonth,
+          year: nextYear,
+          cityName: city.name,
+          title: localEvent.title,
+          category: localEvent.category || 'política',
+          text: localEvent.narrative,
+          isIdeological: true,
+          severity: localEvent.severity || 'light'
+        });
+
+        monthExplanation = localEvent.explanation;
+
+        if (city.id === playerCityId) {
+          diaryEntries.unshift({
+            month: nextMonth,
+            year: nextYear,
+            type: 'local',
+            title: `${city.name}: ${localEvent.title}`,
+            text: localEvent.narrative,
+            isIdeological: true
+          });
+        }
+      } else {
+        // Evento padrão
+        cityEvents.push({
+          id: localEvent.id,
+          type: 'standard',
+          category: localEvent.category,
+          title: localEvent.title,
+          text: localEvent.narrative,
+          explanation: localEvent.explanation,
+          effects: localEvent.effects || {},
+          month: nextMonth,
+          year: nextYear
+        });
+
+        monthHeadlines.push({
+          month: nextMonth,
+          year: nextYear,
+          cityName: city.name,
+          title: localEvent.title,
+          category: localEvent.category,
           text: localEvent.narrative
         });
+
+        monthExplanation = localEvent.explanation;
+
+        if (city.id === playerCityId) {
+          diaryEntries.unshift({
+            month: nextMonth,
+            year: nextYear,
+            type: 'local',
+            title: `${city.name}: ${localEvent.title}`,
+            text: localEvent.narrative
+          });
+        }
       }
     }
   }
@@ -300,66 +558,67 @@ function simulateSingleCityMonth(city, activeGlobalEvent, nextMonth, nextYear, r
         break;
 
       case 'safety':
-        // Empregos e igualdade reduzem crime; confiança apoia cooperação
+        // Empregos e coesão reduzem criminalidade; confiança e ordem apoiam cooperação
         relations += (oldInd.jobs - 50) * 0.025;
-        relations += (oldInd.equality - 50) * 0.035;
-        relations += (oldInd.trust - 50) * 0.02;
+        relations += (oldInd.equality - 50) * 0.020;
+        relations += (oldInd.trust - 50) * 0.020;
         break;
 
       case 'health':
-        // Saneamento/infraestrutura e meio ambiente apoiam saúde
-        relations += (oldInd.infrastructure - 50) * 0.03;
-        relations += (oldInd.environment - 50) * 0.04;
+        // Saneamento/infraestrutura, investimentos econômicos e meio ambiente apoiam a saúde
+        relations += (oldInd.infrastructure - 50) * 0.025;
+        relations += (oldInd.economy - 50) * 0.020;
+        relations += (oldInd.environment - 50) * 0.035;
         break;
 
       case 'education':
-        // Economia e igualdade de acesso sustentam escolas
-        relations += (oldInd.economy - 50) * 0.02;
-        relations += (oldInd.equality - 50) * 0.025;
+        // Dinamismo econômico e igualdade de acesso sustentam boas escolas
+        relations += (oldInd.economy - 50) * 0.025;
+        relations += (oldInd.equality - 50) * 0.020;
         break;
 
       case 'housing':
-        // Economia muito alta e crescimento populacional pressionam moradia para baixo (carestia)
-        relations -= (oldInd.economy - 50) * 0.04;
-        relations += (oldInd.infrastructure - 50) * 0.02;
+        // Economia aquecida eleva demanda habitacional; infraestrutura amplia loteamentos
+        relations -= (oldInd.economy - 50) * 0.020;
+        relations += (oldInd.infrastructure - 50) * 0.025;
         break;
 
       case 'equality':
-        // Educação universal e serviços públicos favorecem igualdade; especulação econômica desenfreada pode reduzir
-        relations += (oldInd.education - 50) * 0.03;
-        relations -= (oldInd.economy - 50) * 0.02;
+        // Educação e serviços públicos favorecem igualdade; dinamismo de mercado gera dispersão moderada
+        relations += (oldInd.education - 50) * 0.025;
+        relations -= (oldInd.economy - 50) * 0.015;
         break;
 
       case 'infrastructure':
-        // Economia fornece recursos; estabilidade permite obras de longo prazo
+        // Economia fornece recursos e estabilidade permite obras de longo prazo
         relations += (oldInd.economy - 50) * 0.035;
         relations += (oldInd.stability - 50) * 0.025;
         break;
 
       case 'environment':
-        // Atividade industrial pesada degrada; educação ambiental e tecnologia limpa recuperam
+        // Atividade industrial intensa requer tecnologias limpas e educação ambiental
         relations += (oldInd.education - 50) * 0.025;
-        relations -= (oldInd.economy - 50) * 0.02;
+        relations -= (oldInd.economy - 50) * 0.020;
         break;
 
       case 'personalFreedom':
-        // Educação e confiança fomentam garantias individuais
-        relations += (oldInd.education - 50) * 0.02;
-        relations += (oldInd.trust - 50) * 0.02;
+        // Educação e confiança sustentam garantias e pluralismo civil
+        relations += (oldInd.education - 50) * 0.020;
+        relations += (oldInd.trust - 50) * 0.020;
         break;
 
       case 'stability':
-        // Desigualdade e insegurança desestabilizam; confiança e empregos pacificam
-        relations -= (50 - oldInd.equality) * 0.03;
-        relations += (oldInd.trust - 50) * 0.03;
-        relations += (oldInd.jobs - 50) * 0.02;
+        // Confiança, empregos e coesão pacificam a pólis
+        relations -= (50 - oldInd.equality) * 0.018;
+        relations += (oldInd.trust - 50) * 0.025;
+        relations += (oldInd.jobs - 50) * 0.025;
         break;
 
       case 'trust':
-        // Segurança, igualdade e estabilidade aumentam a crença mútua
-        relations += (oldInd.safety - 50) * 0.025;
-        relations += (oldInd.equality - 50) * 0.03;
-        relations += (oldInd.stability - 50) * 0.02;
+        // Segurança, estabilidade e equidade aumentam a confiança pública
+        relations += (oldInd.safety - 50) * 0.020;
+        relations += (oldInd.equality - 50) * 0.020;
+        relations += (oldInd.stability - 50) * 0.020;
         break;
     }
 
@@ -370,14 +629,15 @@ function simulateSingleCityMonth(city, activeGlobalEvent, nextMonth, nextYear, r
     const personalDev = city.civicFreedom - 50;
 
     if (key === 'economy') ethicalPush += econDev * 0.025;
-    if (key === 'housing') ethicalPush -= econDev * 0.02; // maior liberdade de mercado aquece preços
-    if (key === 'equality') ethicalPush -= econDev * 0.022; // coordenação pública foca redistribuição
-    if (key === 'personalFreedom') ethicalPush += personalDev * 0.04;
-    if (key === 'trust') ethicalPush += (personalDev * 0.015) - (Math.abs(econDev) * 0.01);
+    if (key === 'jobs') ethicalPush += econDev * 0.020;
+    if (key === 'housing') ethicalPush -= econDev * 0.012; // maior liberdade de mercado aquece preços
+    if (key === 'equality') ethicalPush -= econDev * 0.015; // coordenação pública foca redistribuição
+    if (key === 'personalFreedom') ethicalPush += personalDev * 0.035;
+    if (key === 'trust') ethicalPush += (personalDev * 0.015) - (Math.abs(econDev) * 0.008);
     if (key === 'safety') {
       // Baixa liberdade pessoal tenta impor ordem; alta liberdade pessoal requer confiança mútua
-      if (personalDev < -20) ethicalPush += 0.4;
-      else if (personalDev > 20) ethicalPush -= 0.3;
+      if (personalDev < -20) ethicalPush += 0.35;
+      else if (personalDev > 20) ethicalPush -= 0.25;
     }
 
     // Efeito de evento local
@@ -386,10 +646,23 @@ function simulateSingleCityMonth(city, activeGlobalEvent, nextMonth, nextYear, r
       if (localEvent.effects && localEvent.effects[key]) {
         eventEffect += localEvent.effects[key];
       }
+      if (localEvent.immediateBenefitEffects && localEvent.immediateBenefitEffects[key]) {
+        eventEffect += localEvent.immediateBenefitEffects[key];
+      }
       if (localEvent.ethicalModifiers) {
         const mod = localEvent.ethicalModifiers(city);
         if (mod && mod[key]) eventEffect += mod[key];
       }
+    }
+
+    // Efeitos mensais acumulados de condições persistentes ativas
+    if (monthlyConditionEffects[key]) {
+      eventEffect += monthlyConditionEffects[key];
+    }
+
+    // Efeitos atrasados aplicados na resolução de condições encerradas
+    if (delayedEffectsToApply[key]) {
+      eventEffect += delayedEffectsToApply[key];
     }
 
     // Efeito de evento global
@@ -467,7 +740,11 @@ function simulateSingleCityMonth(city, activeGlobalEvent, nextMonth, nextYear, r
     attractiveness: 50, // será recalculado no passo de migração
     history: updatedHistory,
     recentEvents: [...cityEvents, ...(city.recentEvents || [])].slice(0, 8),
-    lastMonthExplanation: monthExplanation
+    lastMonthExplanation: monthExplanation,
+    ideologicalCooldowns: nextIdeologicalCooldowns,
+    familyCooldowns: nextFamilyCooldowns,
+    activeConditions: remainingConditions,
+    ideologicalHistory: updatedIdeologicalHistory
   };
 }
 

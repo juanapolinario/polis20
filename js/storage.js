@@ -4,7 +4,29 @@
  */
 
 const STORAGE_KEY = 'horizontes_civicos_save_v1';
-const CURRENT_VERSION = 1;
+export const CURRENT_VERSION = 2;
+
+/**
+ * Migra com segurança dados de partidas salvas em versões anteriores (ex: v1 -> v2)
+ * Preserva integralmente cidades, créditos, datas e históricos, inicializando os novos campos de cooldowns e condições ativas.
+ */
+export function migrateSaveData(payload) {
+  if (!payload || !payload.state) return payload;
+
+  const state = payload.state;
+  if (Array.isArray(state.cities)) {
+    state.cities = state.cities.map(city => ({
+      ...city,
+      ideologicalCooldowns: city.ideologicalCooldowns ? { ...city.ideologicalCooldowns } : {},
+      familyCooldowns: city.familyCooldowns ? { ...city.familyCooldowns } : {},
+      activeConditions: Array.isArray(city.activeConditions) ? [...city.activeConditions] : [],
+      ideologicalHistory: Array.isArray(city.ideologicalHistory) ? [...city.ideologicalHistory] : []
+    }));
+  }
+
+  payload.version = CURRENT_VERSION;
+  return payload;
+}
 
 // Salva o estado atual e o estado do gerador pseudoaleatório no localStorage
 export function saveGame(state, rngState) {
@@ -23,7 +45,7 @@ export function saveGame(state, rngState) {
   }
 }
 
-// Carrega a partida salva do localStorage
+// Carrega a partida salva do localStorage com migração automática
 export function loadGame() {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
@@ -34,7 +56,7 @@ export function loadGame() {
       console.warn('Dados salvos inválidos:', validation.error);
       return null;
     }
-    return parsed;
+    return migrateSaveData(parsed);
   } catch (err) {
     console.error('Erro ao recuperar partida salva:', err);
     return null;
@@ -85,7 +107,7 @@ export function exportGameToJson(state, rngState) {
   URL.revokeObjectURL(url);
 }
 
-// Importa e valida um arquivo JSON fornecido pelo jogador
+// Importa e valida um arquivo JSON fornecido pelo jogador aplicando migração
 export function importGameFromJson(file) {
   return new Promise((resolve, reject) => {
     if (!file) {
@@ -100,7 +122,7 @@ export function importGameFromJson(file) {
         if (!validation.valid) {
           return reject(new Error(`Arquivo de salvamento inválido: ${validation.error}`));
         }
-        resolve(parsed);
+        resolve(migrateSaveData(parsed));
       } catch (err) {
         reject(new Error('Falha ao processar arquivo JSON. Verifique se o formato está correto.'));
       }
@@ -115,8 +137,8 @@ export function validateSaveData(data) {
   if (!data || typeof data !== 'object') {
     return { valid: false, error: 'Objeto de dados ausente ou nulo.' };
   }
-  if (typeof data.version !== 'number' || data.version < 1) {
-    return { valid: false, error: 'Versão de salvamento não reconhecida.' };
+  if (typeof data.version !== 'number' || data.version < 1 || data.version > CURRENT_VERSION) {
+    return { valid: false, error: `Versão de salvamento não reconhecida (versão encontrada: ${data.version}).` };
   }
   if (!data.state || typeof data.state !== 'object') {
     return { valid: false, error: 'Estrutura de estado ausente.' };

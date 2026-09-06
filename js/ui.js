@@ -801,20 +801,35 @@ export class UIManager {
     // 4. Acontecimentos Recentes da Cidade
     if (recentEventsList) {
       if (!currentCity.recentEvents || currentCity.recentEvents.length === 0) {
-        recentEventsList.innerHTML = '<p class="text-sm text-slate-400 italic">Nenhum evento extraordinário nos registros recentes.</p>';
+        recentEventsList.innerHTML = '<p class="text-sm text-slate-400 italic font-mono">Nenhum evento extraordinário nos registros recentes.</p>';
       } else {
         recentEventsList.innerHTML = currentCity.recentEvents.map((ev, idx) => `
-          <div class="event-feed-item ${idx === 0 && hasActiveEvent ? 'event-item-latest' : ''}">
+          <div class="event-feed-item ${idx === 0 && hasActiveEvent ? 'event-item-latest' : ''}" data-event-idx="${idx}" style="cursor: pointer;" title="Clique para inspecionar os detalhes deste despacho">
             <div class="event-feed-header">
-              <span class="badge badge-category badge-cat-${ev.category}">${ev.category.toUpperCase()}</span>
+              ${ev.type === 'ideologicalProblem' ? '<span class="badge badge-ideological font-mono">Tensão política</span>' : ''}
+              <span class="badge badge-category badge-cat-${ev.category}">${(ev.category || 'política').toUpperCase()}</span>
               <span class="text-xs text-slate-400 font-mono">Mês ${ev.month}, Ano ${ev.year}</span>
               ${idx === 0 && hasActiveEvent ? '<span class="badge badge-cat-global ml-auto font-mono">IMPACTO ATIVO</span>' : ''}
+              ${ev.duration && ev.duration > 0 ? `<span class="badge badge-cat-tecnologia ml-auto font-mono">${ev.duration}M</span>` : ''}
             </div>
             <h4 class="event-feed-title">${ev.title}</h4>
             <p class="event-feed-text">${ev.text}</p>
+            ${ev.factorsText ? `<p class="text-xs text-amber-300 font-mono mt-1">📌 ${ev.factorsText}</p>` : ''}
+            ${ev.immediateBenefit ? `<p class="text-xs text-emerald-300 font-mono mt-1">✨ <strong>Benefício inicial:</strong> ${ev.immediateBenefit}</p>` : ''}
             ${ev.explanation ? `<p class="event-feed-explanation"><strong>Causas:</strong> ${ev.explanation}</p>` : ''}
           </div>
         `).join('');
+
+        recentEventsList.querySelectorAll('.event-feed-item').forEach(itemEl => {
+          itemEl.addEventListener('click', () => {
+            const idx = parseInt(itemEl.dataset.eventIdx, 10);
+            const ev = currentCity.recentEvents[idx];
+            if (ev) {
+              sfx.play('click');
+              this.openEventBulletinModal(ev, currentCity);
+            }
+          });
+        });
       }
     }
   }
@@ -1244,6 +1259,81 @@ export class UIManager {
     tickerEl.textContent = headlines.join('  •  ');
   }
 
+  // Exibe o modal detalhado de despacho com etiqueta discreta 'Tensão política', fatores concretos e causalidade
+  openEventBulletinModal(ev, city) {
+    const modal = document.getElementById('modal-event-bulletin');
+    const bTag = document.getElementById('bulletin-flash-tag');
+    const bTitle = document.getElementById('bulletin-title');
+    const bDate = document.getElementById('bulletin-date');
+    const bCity = document.getElementById('bulletin-city');
+    const bBody = document.getElementById('bulletin-body');
+    const bImpact = document.getElementById('bulletin-impact');
+
+    if (!modal) return;
+
+    if (bTag) {
+      if (ev.type === 'ideologicalProblem') {
+        bTag.className = 'badge badge-ideological font-mono';
+        bTag.textContent = 'Tensão política';
+      } else {
+        bTag.className = 'bulletin-flash';
+        bTag.textContent = 'URGENTE • FLASH INFORMATIVO';
+      }
+    }
+
+    if (bTitle) bTitle.textContent = ev.title;
+    if (bDate) bDate.textContent = `Mês ${ev.month}, Ano ${ev.year}`;
+    if (bCity) bCity.textContent = `Metrópole: ${city.name}`;
+    if (bBody) bBody.textContent = ev.text;
+
+    if (bImpact) {
+      if (ev.type === 'ideologicalProblem') {
+        let effectsFormatted = 'Oscilações marginais';
+        if (ev.effects && Object.keys(ev.effects).length > 0) {
+          effectsFormatted = Object.entries(ev.effects).map(([k, v]) => {
+            const defName = INDICATOR_DEFS[k]?.name || k;
+            const sign = v > 0 ? '+' : '';
+            return `${defName} ${sign}${v}`;
+          }).join('  •  ');
+        }
+
+        const durationText = ev.duration && ev.duration > 0
+          ? `${ev.duration} meses (condição persistente)`
+          : 'Efeito pontual';
+
+        const cleanFactors = ev.factorsText ? ev.factorsText.replace(/^Fatores:\s*/i, '') : '';
+
+        bImpact.innerHTML = `
+          <div class="bulletin-detail-grid">
+            <div class="bulletin-detail-card bulletin-card-effects">
+              <strong>IMPACTO NOS INDICADORES:</strong> ${effectsFormatted}
+            </div>
+            ${ev.immediateBenefit ? `
+              <div class="bulletin-detail-card bulletin-card-benefit">
+                <strong>BENEFÍCIO IMEDIATO:</strong> ${ev.immediateBenefit}
+              </div>
+            ` : ''}
+            <div class="bulletin-detail-card font-mono text-xs text-slate-300">
+              <strong>DURAÇÃO:</strong> ${durationText}
+            </div>
+            ${cleanFactors ? `
+              <div class="bulletin-detail-card bulletin-card-factors">
+                <strong>FATORES CONCRETOS:</strong> ${cleanFactors}
+              </div>
+            ` : ''}
+            <div class="bulletin-detail-card bulletin-card-causality">
+              <strong>RELAÇÃO CAUSAL:</strong> ${ev.explanation || 'A absolutização de um bem político parcial gerou tensões e contrapartidas não antecipadas.'}
+            </div>
+          </div>
+        `;
+      } else {
+        bImpact.innerHTML = `<strong>DIRETRIZ & CAUSAS:</strong> ${ev.explanation || 'Acontecimentos extraordinários desencadearam reações em cadeia na sociedade.'}`;
+      }
+    }
+
+    modal.classList.remove('hidden');
+  }
+
   // Verifica se há evento extraordinário de alto impacto para exibir no modal de alerta de crise
   checkAndShowEventBulletin(state) {
     const currentCity = state.cities.find(c => c.id === state.currentCityId);
@@ -1257,25 +1347,7 @@ export class UIManager {
     if (this.lastShownBulletinEventKey === eventKey) return;
     this.lastShownBulletinEventKey = eventKey;
 
-    // Abre o modal de alerta e toca efeito de sirene/alerta
-    const modal = document.getElementById('modal-event-bulletin');
-    const bTitle = document.getElementById('bulletin-title');
-    const bDate = document.getElementById('bulletin-date');
-    const bCity = document.getElementById('bulletin-city');
-    const bBody = document.getElementById('bulletin-body');
-    const bImpact = document.getElementById('bulletin-impact');
-
-    if (!modal) return;
-
-    if (bTitle) bTitle.textContent = ev.title;
-    if (bDate) bDate.textContent = `Mês ${ev.month}, Ano ${ev.year}`;
-    if (bCity) bCity.textContent = `Metrópole: ${currentCity.name}`;
-    if (bBody) bBody.textContent = ev.text;
-    if (bImpact) {
-      bImpact.innerHTML = `<strong>DIRETRIZ & CAUSAS:</strong> ${ev.explanation || 'Acontecimentos extraordinários desencadearam reações em cadeia na sociedade.'}`;
-    }
-
-    modal.classList.remove('hidden');
+    this.openEventBulletinModal(ev, currentCity);
     sfx.play('alert');
   }
 }

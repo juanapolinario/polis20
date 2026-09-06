@@ -3,6 +3,13 @@
  * Centraliza nomes, arquétipos políticos, geografias, especializações e eventos narrativos.
  */
 
+export {
+  NOLAN_PROFILE_CENTERS,
+  calculateNolanAffinity,
+  calculateIdeologicalIntensity,
+  IDEOLOGICAL_PROBLEMS_DATABASE
+} from './ideological_data.js';
+
 // 12 Indicadores centrais de 0 a 100
 export const INDICATOR_DEFS = {
   economy: {
@@ -1009,6 +1016,10 @@ function createCityObject(id, name, econFreedom, personalFreedom, geography, spe
     history: [],
     recentEvents: [],
     activeEffects: [], // efeitos com duração em meses
+    ideologicalCooldowns: {}, // cooldowns por evento { [eventId]: remainingMonths }
+    familyCooldowns: {}, // cooldowns por família de risco { [family]: remainingMonths }
+    activeConditions: [], // condições persistentes temporárias ativas
+    ideologicalHistory: [], // histórico de acontecimentos ideológicos para escaladas
     qualityOfLife: 50,
     attractiveness: 50,
     shortDescription: `${geography.name} com foco em ${specialization.name.toLowerCase()}, orientada por princípios de vertente ${archetype.name.toLowerCase()}.`

@@ -57,10 +57,7 @@
     </header>
 
     <!-- SEÇÃO 1: FAIXA HORIZONTAL DE IDENTIDADE DA METRÓPOLE -->
-    <div class="arcade-hud-box foundation-ribbon mb-4">
-      <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
-      <div class="box-corner-bl"></div><div class="box-corner-br"></div>
-
+    <div class="clean-hud-card foundation-ribbon mb-4">
       <div class="ribbon-header">
         <h2 class="arcade-box-title" style="margin-bottom: 0;">
           <span class="title-led"></span> MATRIZ DE FUNDAÇÃO
@@ -89,62 +86,47 @@
             <span class="text-xs text-slate-400 font-mono">[DETERMINÍSTICA]</span>
           </label>
           <div class="seed-input-row">
-            <input type="text" id="input-seed" class="form-input arcade-input font-mono" placeholder="Ex: Utopia2026, Atlas...">
+            <input type="text" id="input-seed" class="form-input arcade-input font-mono" placeholder="Ex: Utopia2026, Atlas..." value="Utopia2026">
             <button type="button" id="btn-random-seed" class="btn btn-arcade-tool btn-seed-random" title="Gerar semente aleatória">🎲 Rolar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- SEÇÃO 2: GRID PRINCIPAL BALANCEADA (QUESTIONÁRIO À ESQUERDA + DIAGRAMA À DIREITA) -->
+    <!-- SEÇÃO 2: GRID PRINCIPAL BALANCEADA (QUESTIONÁRIO WIZARD À ESQUERDA + DIAGRAMA À DIREITA) -->
     <div class="start-main-grid">
       
-      <!-- Coluna Esquerda: Questionário Interativo de Nolan -->
-      <div class="arcade-hud-box quiz-main-box">
-        <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
-        <div class="box-corner-bl"></div><div class="box-corner-br"></div>
-
-        <div class="quiz-hero-header">
-          <div>
-            <h2 class="arcade-box-title" style="margin-bottom: 0.25rem;">
-              <span class="title-led"></span> QUESTIONÁRIO DE NOLAN
+      <!-- Coluna Esquerda: Questionário Focado Passo a Passo (Wizard) -->
+      <div class="clean-hud-card quiz-wizard-box">
+        <!-- Topo do Wizard: Eixo, Contador e Pontuações ao Vivo -->
+        <div class="quiz-wizard-header">
+          <div class="wizard-header-left">
+            <span class="wizard-axis-tag font-mono" id="wizard-axis-badge">🌐 LIBERDADE PESSOAL</span>
+            <h2 class="arcade-box-title wizard-title" id="wizard-question-title">
+              QUESTÃO <span id="wizard-current-num">1</span> DE 10
             </h2>
-            <p class="quiz-hero-desc">Responda às 10 proposições para calibrar a matriz ideológica de sua metrópole.</p>
           </div>
 
           <div class="quiz-scores-live">
             <div class="score-chip score-chip-personal" title="Pontuação acumulada de Liberdade Pessoal">
-              <span class="score-chip-lbl">PESSOAL:</span>
+              <span class="score-chip-lbl">PESSOAL</span>
               <span class="score-chip-val text-cyan-400 font-mono font-bold" id="quiz-personal-score">50%</span>
             </div>
             <div class="score-chip score-chip-economic" title="Pontuação acumulada de Liberdade Econômica">
-              <span class="score-chip-lbl">ECONÔMICA:</span>
+              <span class="score-chip-lbl">ECONÔMICA</span>
               <span class="score-chip-val text-amber-400 font-mono font-bold" id="quiz-econ-score">50%</span>
             </div>
           </div>
         </div>
 
-        <!-- Abas de Navegação de Eixo do Questionário -->
-        <div class="quiz-axes-bar" role="tablist">
-          <button type="button" class="axis-tab-btn active" id="btn-quiz-tab-personal" data-quiz-axis="personal">
-            <span class="axis-tab-icon">🌐</span>
-            <div class="axis-tab-info">
-              <span class="axis-tab-name">LIBERDADES PESSOAIS & CIVIS</span>
-              <span class="axis-tab-sub font-mono">5 PROPOSIÇÕES (0 A 100%)</span>
-            </div>
-          </button>
-          <button type="button" class="axis-tab-btn" id="btn-quiz-tab-economic" data-quiz-axis="economic">
-            <span class="axis-tab-icon">💼</span>
-            <div class="axis-tab-info">
-              <span class="axis-tab-name">LIBERDADES ECONÔMICAS & MERCADO</span>
-              <span class="axis-tab-sub font-mono">5 PROPOSIÇÕES (0 A 100%)</span>
-            </div>
-          </button>
+        <!-- Stepper de 10 Pílulas Rápidas Clicáveis -->
+        <div class="wizard-stepper-row" id="wizard-stepper" role="tablist" aria-label="Navegação rápida de questões">
+          <!-- 10 pills geradas dinamicamente via JS -->
         </div>
 
-        <!-- Barra de Predefinições Rápidas de Ideologias -->
+        <!-- Predefinições Rápidas de Ideologias em 1 Clique -->
         <div class="quiz-presets-bar">
-          <span class="presets-label font-mono">PREDEFINIÇÕES:</span>
+          <span class="presets-label font-mono">PREENCHER RÁPIDO:</span>
           <button type="button" class="btn-preset-chip" data-preset="centrist">⚖️ Centrista</button>
           <button type="button" class="btn-preset-chip" data-preset="libertarian">🗽 Libertária</button>
           <button type="button" class="btn-preset-chip" data-preset="progressive">🌿 Progressista</button>
@@ -152,17 +134,53 @@
           <button type="button" class="btn-preset-chip" data-preset="statist">🚩 Estatista</button>
         </div>
 
-        <!-- Lista de Questões -->
-        <div id="quiz-questions-list" class="quiz-questions-scroll">
-          <!-- Renderizado dinamicamente por UIManager -->
+        <!-- Card Central da Pergunta em Foco (Sem poluição, fonte ampla, legibilidade máxima) -->
+        <div class="wizard-card-hero">
+          <div class="wizard-card-topic font-mono" id="wizard-card-topic">TEMA: LIBERDADE DE EXPRESSÃO</div>
+          <p class="wizard-card-statement" id="wizard-card-statement">
+            "O governo não deve censurar a imprensa, livros, rádio, cinema, artes ou a internet sob nenhuma justificativa moral ou ideológica."
+          </p>
+
+          <!-- 3 Botões Grandes e Táteis de Resposta -->
+          <div class="wizard-choices-group" id="wizard-choices-group" role="group" aria-label="Opções de resposta">
+            <button type="button" class="btn-wizard-choice choice-disagree" data-val="0">
+              <span class="choice-icon">✕</span>
+              <div class="choice-text">
+                <span class="choice-label">DISCORDO</span>
+                <span class="choice-pts font-mono">0 pts</span>
+              </div>
+            </button>
+            <button type="button" class="btn-wizard-choice choice-neutral" data-val="10">
+              <span class="choice-icon">⚖</span>
+              <div class="choice-text">
+                <span class="choice-label">TALVEZ</span>
+                <span class="choice-pts font-mono">10 pts</span>
+              </div>
+            </button>
+            <button type="button" class="btn-wizard-choice choice-agree" data-val="20">
+              <span class="choice-icon">✓</span>
+              <div class="choice-text">
+                <span class="choice-label">CONCORDO</span>
+                <span class="choice-pts font-mono">20 pts</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Rodapé do Wizard: Botões Anterior / Próxima -->
+        <div class="wizard-nav-footer">
+          <button type="button" id="btn-wizard-prev" class="btn btn-wizard-nav" disabled>
+            ← Anterior
+          </button>
+          <span class="wizard-hint font-mono">Responda para calibrar o espectro em tempo real</span>
+          <button type="button" id="btn-wizard-next" class="btn btn-wizard-nav">
+            Próxima →
+          </button>
         </div>
       </div>
 
       <!-- Coluna Direita: O Diagrama de Nolan Clássico & Perfil Ideológico -->
-      <div class="arcade-hud-box nolan-compass-box">
-        <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
-        <div class="box-corner-bl"></div><div class="box-corner-br"></div>
-
+      <div class="clean-hud-card nolan-compass-box">
         <div class="nolan-compass-header">
           <h2 class="arcade-box-title" style="margin-bottom: 0.25rem;">
             <span class="title-led"></span> ESPECTRO DE NOLAN ORIGINAL

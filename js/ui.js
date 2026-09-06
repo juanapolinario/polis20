@@ -147,73 +147,147 @@ export class UIManager {
       }
     };
 
-    // Renderizador das Perguntas do Questionário de Nolan para o eixo ativo
-    const renderQuizQuestions = () => {
-      const listEl = document.getElementById('quiz-questions-list');
-      if (!listEl) return;
+    // Lista unificada das 10 questões do Questionário de Nolan
+    const allQuizQuestions = [
+      ...NOLAN_QUIZ_QUESTIONS.personal.map((q, idx) => ({
+        ...q,
+        index: idx,
+        axis: 'personal',
+        axisLabel: '🌐 LIBERDADE PESSOAL & COSTUMES',
+        stepNumber: idx + 1
+      })),
+      ...NOLAN_QUIZ_QUESTIONS.economic.map((q, idx) => ({
+        ...q,
+        index: idx + 5,
+        axis: 'economic',
+        axisLabel: '💼 LIBERDADE ECONÔMICA & MERCADO',
+        stepNumber: idx + 6
+      }))
+    ];
 
-      const questions = NOLAN_QUIZ_QUESTIONS[this.activeQuizAxis] || [];
-      const answersForAxis = this.quizAnswers[this.activeQuizAxis] || {};
+    let currentStep = 0;
+    let autoAdvanceTimer = null;
 
-      listEl.innerHTML = questions.map(q => {
-        const currentVal = answersForAxis[q.id] ?? 10;
-        return `
-          <div class="quiz-question-card" data-qid="${q.id}">
-            <div class="quiz-q-header">
-              <span class="quiz-q-num font-mono">[${q.num}/5]</span>
-              <span class="quiz-q-topic">${q.topic.toUpperCase()}</span>
-            </div>
-            <p class="quiz-q-statement">"${q.statement}"</p>
-            <div class="quiz-options-group" role="group" aria-label="Opções para ${q.topic}">
-              <button type="button" class="btn-quiz-opt btn-opt-disagree ${currentVal === 0 ? 'active' : ''}" data-val="0" data-qid="${q.id}">
-                <span class="opt-icon">✕</span> DISCORDO (0)
-              </button>
-              <button type="button" class="btn-quiz-opt btn-opt-neutral ${currentVal === 10 ? 'active' : ''}" data-val="10" data-qid="${q.id}">
-                <span class="opt-icon">⚖</span> TALVEZ (10)
-              </button>
-              <button type="button" class="btn-quiz-opt btn-opt-agree ${currentVal === 20 ? 'active' : ''}" data-val="20" data-qid="${q.id}">
-                <span class="opt-icon">✓</span> CONCORDO (20)
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
+    // Renderiza a pergunta ativa e atualiza o Stepper
+    const renderActiveQuestion = () => {
+      const q = allQuizQuestions[currentStep];
+      if (!q) return;
 
-      listEl.querySelectorAll('.btn-quiz-opt').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const qid = btn.getAttribute('data-qid');
-          const val = Number(btn.getAttribute('data-val'));
+      const axisBadgeEl = document.getElementById('wizard-axis-badge');
+      const numEl = document.getElementById('wizard-current-num');
+      const topicEl = document.getElementById('wizard-card-topic');
+      const stmtEl = document.getElementById('wizard-card-statement');
+      const prevBtn = document.getElementById('btn-wizard-prev');
+      const nextBtn = document.getElementById('btn-wizard-next');
 
-          this.quizAnswers[this.activeQuizAxis][qid] = val;
-          sfx.play('click');
+      if (axisBadgeEl) axisBadgeEl.textContent = q.axisLabel;
+      if (numEl) numEl.textContent = q.stepNumber;
+      if (topicEl) topicEl.textContent = `TEMA: ${q.topic.toUpperCase()}`;
+      if (stmtEl) stmtEl.textContent = `"${q.statement}"`;
 
-          // Recalcula pontuações dos eixos (0 a 100 cada)
-          this.nolanPersonal = Object.values(this.quizAnswers.personal).reduce((a, b) => a + b, 0);
-          this.nolanEcon = Object.values(this.quizAnswers.economic).reduce((a, b) => a + b, 0);
+      if (prevBtn) prevBtn.disabled = (currentStep === 0);
+      if (nextBtn) {
+        nextBtn.innerHTML = currentStep === 9 
+          ? 'Revisar ↺' 
+          : 'Próxima →';
+      }
 
-          updateNolanUI(this.nolanEcon, this.nolanPersonal, false);
-          renderQuizQuestions();
+      const currentVal = this.quizAnswers[q.axis][q.id] ?? 10;
+
+      // Atualiza seleção visual dos 3 botões de escolha
+      const choiceButtons = document.querySelectorAll('.btn-wizard-choice');
+      choiceButtons.forEach(btn => {
+        const val = Number(btn.getAttribute('data-val'));
+        btn.classList.toggle('selected', val === currentVal);
+      });
+
+      renderStepperPills();
+    };
+
+    // Renderiza e atualiza as 10 pílulas do Stepper
+    const stepperContainer = document.getElementById('wizard-stepper');
+    const renderStepperPills = () => {
+      if (!stepperContainer) return;
+
+      if (stepperContainer.children.length !== 10) {
+        stepperContainer.innerHTML = allQuizQuestions.map((q, idx) => {
+          return `<button type="button" class="wizard-step-pill" data-step="${idx}" title="${q.stepNumber}. ${q.topic}">${q.stepNumber}</button>`;
+        }).join('');
+
+        stepperContainer.querySelectorAll('.wizard-step-pill').forEach(pill => {
+          pill.addEventListener('click', () => {
+            const stepIdx = Number(pill.getAttribute('data-step'));
+            currentStep = stepIdx;
+            sfx.play('click');
+            renderActiveQuestion();
+          });
         });
+      }
+
+      stepperContainer.querySelectorAll('.wizard-step-pill').forEach((pill, idx) => {
+        const q = allQuizQuestions[idx];
+        const isAnswered = this.quizAnswers[q.axis][q.id] !== undefined;
+        pill.classList.toggle('active', idx === currentStep);
+        pill.classList.toggle('answered', isAnswered);
       });
     };
 
-    // Alternância entre as abas Eixo Pessoal e Eixo Econômico
-    const tabPersonalBtn = document.getElementById('btn-quiz-tab-personal');
-    const tabEconBtn = document.getElementById('btn-quiz-tab-economic');
+    // Handler dos 3 botões de resposta
+    document.querySelectorAll('.btn-wizard-choice').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = Number(btn.getAttribute('data-val'));
+        const q = allQuizQuestions[currentStep];
+        if (!q) return;
 
-    const switchQuizAxis = (axis) => {
-      this.activeQuizAxis = axis;
-      if (tabPersonalBtn) tabPersonalBtn.classList.toggle('active', axis === 'personal');
-      if (tabEconBtn) tabEconBtn.classList.toggle('active', axis === 'economic');
-      sfx.play('click');
-      renderQuizQuestions();
-    };
+        this.quizAnswers[q.axis][q.id] = val;
+        sfx.play('click');
 
-    if (tabPersonalBtn) tabPersonalBtn.addEventListener('click', () => switchQuizAxis('personal'));
-    if (tabEconBtn) tabEconBtn.addEventListener('click', () => switchQuizAxis('economic'));
+        // Recalcula pontuações dos eixos (0 a 100 cada)
+        this.nolanPersonal = Object.values(this.quizAnswers.personal).reduce((a, b) => a + b, 0);
+        this.nolanEcon = Object.values(this.quizAnswers.economic).reduce((a, b) => a + b, 0);
+
+        updateNolanUI(this.nolanEcon, this.nolanPersonal, false);
+        renderActiveQuestion();
+
+        // Avanço automático suave após seleção
+        if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+        if (currentStep < 9) {
+          autoAdvanceTimer = setTimeout(() => {
+            currentStep++;
+            renderActiveQuestion();
+          }, 240);
+        }
+      });
+    });
+
+    // Botões Anterior / Próxima
+    const prevBtn = document.getElementById('btn-wizard-prev');
+    const nextBtn = document.getElementById('btn-wizard-next');
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (currentStep > 0) {
+          currentStep--;
+          sfx.play('click');
+          renderActiveQuestion();
+        }
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (currentStep < 9) {
+          currentStep++;
+        } else {
+          currentStep = 0;
+        }
+        sfx.play('click');
+        renderActiveQuestion();
+      });
+    }
 
     // Predefinições rápidas de respostas do questionário
-    document.querySelectorAll('.btn-quiz-preset').forEach(btn => {
+    document.querySelectorAll('.btn-preset-chip').forEach(btn => {
       btn.addEventListener('click', () => {
         const preset = btn.getAttribute('data-preset');
         sfx.play('coins');
@@ -245,7 +319,7 @@ export class UIManager {
         this.nolanEcon = Object.values(this.quizAnswers.economic).reduce((a, b) => a + b, 0);
 
         updateNolanUI(this.nolanEcon, this.nolanPersonal, false);
-        renderQuizQuestions();
+        renderActiveQuestion();
       });
     });
 
@@ -296,8 +370,8 @@ export class UIManager {
       });
     }
 
-    // Inicialização da lista de perguntas e valores iniciais
-    renderQuizQuestions();
+    // Inicialização da pergunta ativa e valores iniciais
+    renderActiveQuestion();
     updateNolanUI(50, 50, false);
 
     // Botão Gerador de Semente Procedural Aleatória

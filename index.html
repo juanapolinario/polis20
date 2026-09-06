@@ -56,94 +56,119 @@
       </p>
     </header>
 
-    <div class="start-grid arcade-frame-outer">
-      <!-- Coluna Esquerda: Formulários e Parâmetros com Estilo HUD -->
-      <div class="start-form-col arcade-hud-box">
-        <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
-        <div class="box-corner-bl"></div><div class="box-corner-br"></div>
+    <!-- SEÇÃO 1: FAIXA HORIZONTAL DE IDENTIDADE DA METRÓPOLE -->
+    <div class="arcade-hud-box foundation-ribbon mb-4">
+      <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+      <div class="box-corner-bl"></div><div class="box-corner-br"></div>
 
-        <h2 class="arcade-box-title">
+      <div class="ribbon-header">
+        <h2 class="arcade-box-title" style="margin-bottom: 0;">
           <span class="title-led"></span> MATRIZ DE FUNDAÇÃO
         </h2>
+        <span class="ribbon-hint font-mono text-xs text-slate-400">[PASSO 1: DADOS CADASTRAIS DA METRÓPOLE]</span>
+      </div>
 
-        <div class="form-group">
+      <div class="foundation-fields-grid">
+        <div class="form-group foundation-field">
           <label for="input-city-name" class="form-label arcade-label">
-            <span>NOME DA METRÓPOLE</span>
+            <span>🏙️ NOME DA METRÓPOLE</span>
           </label>
-          <input type="text" id="input-city-name" class="form-input arcade-input" value="Nova Alvorada" maxlength="30" required placeholder="Ex: Porto Real, Nova Esperança...">
+          <input type="text" id="input-city-name" class="form-input arcade-input" value="Nova Alvorada" maxlength="30" required placeholder="Ex: Nova Alvorada, Porto Real...">
         </div>
 
-        <div class="form-group">
+        <div class="form-group foundation-field">
           <label for="input-citizen-name" class="form-label arcade-label">
-            <span>REGISTRO DO CIDADÃO</span>
+            <span>👤 REGISTRO DO CIDADÃO</span>
           </label>
           <input type="text" id="input-citizen-name" class="form-input arcade-input" value="Observador Cívico" maxlength="25" placeholder="Ex: Helena Ramos...">
         </div>
 
-        <div class="form-group">
+        <div class="form-group foundation-field">
           <label for="input-seed" class="form-label arcade-label">
-            <span>SEMENTE DO CONTINENTE</span>
+            <span>🎲 SEMENTE CONTINENTAL</span>
             <span class="text-xs text-slate-400 font-mono">[DETERMINÍSTICA]</span>
           </label>
-          <input type="text" id="input-seed" class="form-input arcade-input font-mono" placeholder="Ex: Utopia2026, 42, Atlas...">
-        </div>
-
-        <!-- QUESTIONÁRIO DO DIAGRAMA DE NOLAN (Substitui os sliders manuais) -->
-        <div class="nolan-quiz-container" id="nolan-quiz-container">
-          <div class="quiz-header-row">
-            <div>
-              <h3 class="arcade-quiz-title">
-                <span class="title-led"></span> QUESTIONÁRIO DE NOLAN
-              </h3>
-              <p class="quiz-subtitle">Responda às 10 proposições para calibrar a matriz ideológica de sua metrópole.</p>
-            </div>
-            <div class="quiz-score-gauges">
-              <div class="quiz-score-pill" title="Pontuação acumulada de Liberdade Pessoal">
-                <span class="quiz-score-lbl">PESSOAL:</span>
-                <span class="quiz-score-num text-cyan-400 font-mono font-bold" id="quiz-personal-score">50%</span>
-              </div>
-              <div class="quiz-score-pill" title="Pontuação acumulada de Liberdade Econômica">
-                <span class="quiz-score-lbl">ECONÔMICA:</span>
-                <span class="quiz-score-num text-amber-400 font-mono font-bold" id="quiz-econ-score">50%</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Abas de Navegação dos Eixos do Questionário -->
-          <div class="quiz-tabs-bar" role="tablist">
-            <button type="button" class="quiz-tab-btn active" id="btn-quiz-tab-personal" data-quiz-axis="personal">
-              <span class="quiz-tab-dot"></span> 🌐 LIBERDADES PESSOAIS (5)
-            </button>
-            <button type="button" class="quiz-tab-btn" id="btn-quiz-tab-economic" data-quiz-axis="economic">
-              <span class="quiz-tab-dot"></span> 💼 LIBERDADES ECONÔMICAS (5)
-            </button>
-          </div>
-
-          <!-- Barra de Predefinições Rápidas de Ideologias -->
-          <div class="quiz-presets-bar">
-            <span class="quiz-presets-lbl font-mono">PREDEFINIR:</span>
-            <button type="button" class="btn-quiz-preset" data-preset="centrist">⚖️ Centro</button>
-            <button type="button" class="btn-quiz-preset" data-preset="libertarian">🗽 Libertário</button>
-            <button type="button" class="btn-quiz-preset" data-preset="progressive">🌿 Progressista</button>
-            <button type="button" class="btn-quiz-preset" data-preset="conservative">🏛️ Conservador</button>
-            <button type="button" class="btn-quiz-preset" data-preset="statist">🚩 Estatista</button>
-          </div>
-
-          <!-- Lista de Perguntas (Renderizada dinamicamente com 3 botões táticos por questão) -->
-          <div id="quiz-questions-list" class="quiz-questions-list">
-            <!-- Renderizado dinamicamente por UIManager -->
+          <div class="seed-input-row">
+            <input type="text" id="input-seed" class="form-input arcade-input font-mono" placeholder="Ex: Utopia2026, Atlas...">
+            <button type="button" id="btn-random-seed" class="btn btn-arcade-tool btn-seed-random" title="Gerar semente aleatória">🎲 Rolar</button>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Coluna Direita: Gráfico Interativo de Nolan (Formato Losango Clássico Original) -->
-      <div class="nolan-wrapper arcade-hud-box">
+    <!-- SEÇÃO 2: GRID PRINCIPAL BALANCEADA (QUESTIONÁRIO À ESQUERDA + DIAGRAMA À DIREITA) -->
+    <div class="start-main-grid">
+      
+      <!-- Coluna Esquerda: Questionário Interativo de Nolan -->
+      <div class="arcade-hud-box quiz-main-box">
         <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
         <div class="box-corner-bl"></div><div class="box-corner-br"></div>
 
-        <h2 class="arcade-box-title">
-          <span class="title-led"></span> ESPECTRO DE NOLAN ORIGINAL
-        </h2>
+        <div class="quiz-hero-header">
+          <div>
+            <h2 class="arcade-box-title" style="margin-bottom: 0.25rem;">
+              <span class="title-led"></span> QUESTIONÁRIO DE NOLAN
+            </h2>
+            <p class="quiz-hero-desc">Responda às 10 proposições para calibrar a matriz ideológica de sua metrópole.</p>
+          </div>
+
+          <div class="quiz-scores-live">
+            <div class="score-chip score-chip-personal" title="Pontuação acumulada de Liberdade Pessoal">
+              <span class="score-chip-lbl">PESSOAL:</span>
+              <span class="score-chip-val text-cyan-400 font-mono font-bold" id="quiz-personal-score">50%</span>
+            </div>
+            <div class="score-chip score-chip-economic" title="Pontuação acumulada de Liberdade Econômica">
+              <span class="score-chip-lbl">ECONÔMICA:</span>
+              <span class="score-chip-val text-amber-400 font-mono font-bold" id="quiz-econ-score">50%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Abas de Navegação de Eixo do Questionário -->
+        <div class="quiz-axes-bar" role="tablist">
+          <button type="button" class="axis-tab-btn active" id="btn-quiz-tab-personal" data-quiz-axis="personal">
+            <span class="axis-tab-icon">🌐</span>
+            <div class="axis-tab-info">
+              <span class="axis-tab-name">LIBERDADES PESSOAIS & CIVIS</span>
+              <span class="axis-tab-sub font-mono">5 PROPOSIÇÕES (0 A 100%)</span>
+            </div>
+          </button>
+          <button type="button" class="axis-tab-btn" id="btn-quiz-tab-economic" data-quiz-axis="economic">
+            <span class="axis-tab-icon">💼</span>
+            <div class="axis-tab-info">
+              <span class="axis-tab-name">LIBERDADES ECONÔMICAS & MERCADO</span>
+              <span class="axis-tab-sub font-mono">5 PROPOSIÇÕES (0 A 100%)</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Barra de Predefinições Rápidas de Ideologias -->
+        <div class="quiz-presets-bar">
+          <span class="presets-label font-mono">PREDEFINIÇÕES:</span>
+          <button type="button" class="btn-preset-chip" data-preset="centrist">⚖️ Centrista</button>
+          <button type="button" class="btn-preset-chip" data-preset="libertarian">🗽 Libertária</button>
+          <button type="button" class="btn-preset-chip" data-preset="progressive">🌿 Progressista</button>
+          <button type="button" class="btn-preset-chip" data-preset="conservative">🏛️ Conservadora</button>
+          <button type="button" class="btn-preset-chip" data-preset="statist">🚩 Estatista</button>
+        </div>
+
+        <!-- Lista de Questões -->
+        <div id="quiz-questions-list" class="quiz-questions-scroll">
+          <!-- Renderizado dinamicamente por UIManager -->
+        </div>
+      </div>
+
+      <!-- Coluna Direita: O Diagrama de Nolan Clássico & Perfil Ideológico -->
+      <div class="arcade-hud-box nolan-compass-box">
+        <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+        <div class="box-corner-bl"></div><div class="box-corner-br"></div>
+
+        <div class="nolan-compass-header">
+          <h2 class="arcade-box-title" style="margin-bottom: 0.25rem;">
+            <span class="title-led"></span> ESPECTRO DE NOLAN ORIGINAL
+          </h2>
+          <p class="nolan-compass-sub font-mono text-xs text-slate-400">DIAGRAMA CLÁSSICO DE DAVID NOLAN (45°)</p>
+        </div>
         
         <div id="nolan-chart" class="nolan-chart-box arcade-nolan-frame" tabindex="0" role="slider" aria-label="Diagrama de Nolan clássico em formato de losango. Ajuste a posição com o mouse, toque ou setas do teclado." aria-valuemin="0" aria-valuemax="100">
           <svg viewBox="0 0 400 400" id="nolan-svg" class="nolan-svg-chart" xmlns="http://www.w3.org/2000/svg">
@@ -231,26 +256,26 @@
         </div>
 
         <!-- Resultado do Arquétipo em Tempo Real -->
-        <div class="nolan-result-box arcade-result-box">
+        <div class="nolan-result-box arcade-result-card">
           <div class="result-header-row">
-            <span class="result-badge-label">ARQUÉTIPO FUNDADOR:</span>
-            <div id="start-archetype-name" class="nolan-result-name arcade-gold">Centrista</div>
+            <span class="result-badge-label font-mono">ARQUÉTIPO FUNDADOR:</span>
+            <div id="start-archetype-name" class="archetype-name-highlight">Centrista</div>
           </div>
           <p id="start-archetype-desc" class="nolan-result-desc">Equilíbrio pragmático entre iniciativa privada, regulação pública e garantias civis.</p>
-          <p id="start-archetype-summary" class="text-xs text-slate-400 mt-1 font-mono">Busca moderação e amortecimento de crises.</p>
+          <p id="start-archetype-summary" class="archetype-summary-note font-mono">Busca moderação e amortecimento de crises.</p>
         </div>
       </div>
+    </div>
 
-      <!-- Ações de Inicialização Estilo Fliperama -->
-      <div class="start-actions arcade-actions-row">
-        <button id="btn-create-world" class="btn btn-arcade-primary btn-arcade-large" type="button">
-          <span class="btn-shine"></span>
-          <span class="btn-icon">▶</span> INICIAR NOVO MUNDO
-        </button>
-        <button id="btn-continue-saved" class="btn btn-arcade-secondary btn-arcade-large hidden" type="button">
-          <span class="btn-icon">💾</span> CONTINUAR PARTIDA SALVA
-        </button>
-      </div>
+    <!-- SEÇÃO 3: BARRA DE AÇÃO GROUNDED (INFERIOR) -->
+    <div class="start-actions-footer">
+      <button id="btn-create-world" class="btn btn-arcade-primary btn-arcade-hero" type="button">
+        <span class="btn-shine"></span>
+        <span class="btn-icon">▶</span> FUNDAR METRÓPOLE & INICIAR SIMULAÇÃO
+      </button>
+      <button id="btn-continue-saved" class="btn btn-arcade-secondary btn-arcade-hero hidden" type="button">
+        <span class="btn-icon">💾</span> CONTINUAR PARTIDA SALVA
+      </button>
     </div>
   </section>
 

@@ -300,6 +300,25 @@ export class UIManager {
     renderQuizQuestions();
     updateNolanUI(50, 50, false);
 
+    // Botão Gerador de Semente Procedural Aleatória
+    const btnRandomSeed = document.getElementById('btn-random-seed');
+    const inputSeed = document.getElementById('input-seed');
+    if (btnRandomSeed && inputSeed) {
+      btnRandomSeed.addEventListener('click', () => {
+        const prefixes = [
+          'Utopia', 'Horizonte', 'Atlas', 'Solaris', 'Civitas', 
+          'Alvorada', 'Arcadia', 'Polis', 'Vanguarda', 'Cosmos', 
+          'Aurora', 'Elysium', 'Astra', 'Valparaiso', 'Olympus'
+        ];
+        const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+        const randomNum = Math.floor(100 + Math.random() * 900);
+        inputSeed.value = `${randomPrefix}${randomNum}`;
+        sfx.play('coins');
+        inputSeed.classList.add('pulse-highlight');
+        setTimeout(() => inputSeed.classList.remove('pulse-highlight'), 300);
+      });
+    }
+
     // Botão Criar Mundo
     const btnCreate = document.getElementById('btn-create-world');
     if (btnCreate) {

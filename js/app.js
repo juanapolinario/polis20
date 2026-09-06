@@ -8,6 +8,7 @@ import { generateInitialCities } from './data.js';
 import { createInitialGameState, advanceMonth, migratePlayerToCity } from './simulation.js';
 import { saveGame, loadGame, hasSavedGame, clearSave, exportGameToJson, importGameFromJson } from './storage.js';
 import { UIManager } from './ui.js';
+import { sfx } from './audio.js';
 
 class AppController {
   constructor() {
@@ -97,9 +98,12 @@ class AppController {
     if (!this.gameState) return;
     const result = migratePlayerToCity(this.gameState, destinationCityId);
     if (!result.success) {
+      sfx.play('error');
       this.ui.showToast(result.reason, 'warning');
       return;
     }
+
+    sfx.play('migrate');
 
     // Aplica o novo estado intermediário e avança 1 mês como tempo de mudança
     this.gameState = result.state;

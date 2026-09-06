@@ -3,75 +3,118 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Horizontes Cívicos - Simulador político-social de 20 cidades para navegador. Acompanhe indicadores, evolução social e tome decisões de migração como observador e cidadão.">
+  <meta name="description" content="Horizontes Cívicos - Simulador político-social de 20 cidades para navegador. Acompanhe indicadores, evolução social e tome decisões de migração com estética retro-game e áudio procedural.">
   <meta name="author" content="Horizontes Cívicos Project">
   <title>Horizontes Cívicos — Simulador Político-Social de Cidades</title>
+
+  <!-- Google Fonts para Autêntica Identidade Gamer Retro/Cyber-Sim -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,400&family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="crt-active">
+
+  <!-- Filtro CRT Scanlines & Vinheta Retro (Ativável/Desativável pelo Jogador) -->
+  <div id="crt-overlay" class="crt-overlay" aria-hidden="true"></div>
+
+  <!-- Container Global de Números Flutuantes (+50 / -30 Créditos) -->
+  <div id="floating-numbers-container" class="floating-numbers-container" aria-hidden="true"></div>
 
   <!-- ======================================================================
-       TELA INICIAL DE CONFIGURAÇÃO DO MUNDO
+       TELA INICIAL DE CONFIGURAÇÃO DO MUNDO (ARCADE TITLE SCREEN)
        ====================================================================== -->
-  <section id="screen-start" class="screen-container" aria-label="Configuração Inicial do Mundo">
-    <header class="start-hero">
-      <h1 class="start-title">Horizontes Cívicos</h1>
-      <p class="start-subtitle">
-        Um simulador social e político contemplativo de 20 cidades em constante transformação.
-        Configure a ética fundadora da sua cidade inicial nos eixos de liberdade econômica e pessoal,
-        e observe as tensões, virtudes e compensações do mundo como um cidadão contemporâneo.
+  <section id="screen-start" class="screen-container screen-arcade-start" aria-label="Configuração Inicial do Mundo">
+    
+    <!-- Barra Superior de Opções Retro da Tela Inicial -->
+    <div class="arcade-title-bar">
+      <div class="arcade-badge">SISTEMA CÍVICO v2.0 • 20 CIDADES</div>
+      <div class="arcade-settings-group">
+        <button id="btn-title-crt" class="btn btn-arcade-tool" type="button" title="Alternar Filtro de Tubo CRT">
+          <span class="tool-icon">📺</span> <span class="tool-text">CRT: ON</span>
+        </button>
+        <button id="btn-title-audio" class="btn btn-arcade-tool" type="button" title="Alternar Efeitos Sonoros">
+          <span class="tool-icon">🔊</span> <span class="tool-text">SFX: ON</span>
+        </button>
+      </div>
+    </div>
+
+    <header class="start-hero arcade-hero">
+      <div class="game-logo-box">
+        <div class="pixel-tag">[ POLÍTICA • SIMULAÇÃO • ESTRATÉGIA ]</div>
+        <h1 class="start-title arcade-title glow-cyan">HORIZONTES CÍVICOS</h1>
+        <div class="arcade-subtitle-bar">
+          <span class="arcade-chip">DIAGRAMA DE NOLAN</span>
+          <span class="arcade-chip">20 CIDADES EM TEMPO REAL</span>
+          <span class="arcade-chip">MOTOR PROCEDURAL</span>
+        </div>
+      </div>
+      <p class="start-subtitle arcade-desc">
+        Fundamente a matriz ideológica de sua metrópole no espectro clássico de liberdades econômicas e individuais.
+        O ecossistema continental evoluirá mês a mês com migrações, tensões sociais, ciclos de mercado e acontecimentos extraordinários.
       </p>
     </header>
 
-    <div class="start-grid">
-      <!-- Coluna Esquerda: Formulários e Parâmetros -->
-      <div class="start-form-col">
-        <h2 class="text-lg font-bold mb-4" style="margin-bottom: 1.25rem;">Fundação da Sua Cidade</h2>
+    <div class="start-grid arcade-frame-outer">
+      <!-- Coluna Esquerda: Formulários e Parâmetros com Estilo HUD -->
+      <div class="start-form-col arcade-hud-box">
+        <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+        <div class="box-corner-bl"></div><div class="box-corner-br"></div>
+
+        <h2 class="arcade-box-title">
+          <span class="title-led"></span> MATRIZ DE FUNDAÇÃO
+        </h2>
 
         <div class="form-group">
-          <label for="input-city-name" class="form-label">
-            <span>Nome da Cidade Inicial</span>
+          <label for="input-city-name" class="form-label arcade-label">
+            <span>NOME DA METRÓPOLE</span>
           </label>
-          <input type="text" id="input-city-name" class="form-input" value="Nova Alvorada" maxlength="30" required placeholder="Ex: Porto Real, Nova Esperança...">
+          <input type="text" id="input-city-name" class="form-input arcade-input" value="Nova Alvorada" maxlength="30" required placeholder="Ex: Porto Real, Nova Esperança...">
         </div>
 
         <div class="form-group">
-          <label for="input-citizen-name" class="form-label">
-            <span>Seu Nome de Cidadão (Opcional)</span>
+          <label for="input-citizen-name" class="form-label arcade-label">
+            <span>REGISTRO DO CIDADÃO</span>
           </label>
-          <input type="text" id="input-citizen-name" class="form-input" value="Observador Cívico" maxlength="25" placeholder="Ex: Helena Ramos...">
+          <input type="text" id="input-citizen-name" class="form-input arcade-input" value="Observador Cívico" maxlength="25" placeholder="Ex: Helena Ramos...">
         </div>
 
         <div class="form-group">
-          <label for="input-seed" class="form-label">
-            <span>Semente do Mundo (Opcional)</span>
-            <span class="text-xs text-slate-400 font-mono">Gera mundos idênticos</span>
+          <label for="input-seed" class="form-label arcade-label">
+            <span>SEMENTE DO CONTINENTE</span>
+            <span class="text-xs text-slate-400 font-mono">[DETERMINÍSTICA]</span>
           </label>
-          <input type="text" id="input-seed" class="form-input" placeholder="Ex: Utopia2026, 42, Atlas...">
+          <input type="text" id="input-seed" class="form-input arcade-input font-mono" placeholder="Ex: Utopia2026, 42, Atlas...">
         </div>
 
         <div class="form-group" style="margin-top: 1.5rem;">
-          <label for="nolan-econ-slider" class="form-label">
-            <span>Liberdade Econômica</span>
-            <span class="font-mono text-cyan-400 font-bold" id="nolan-econ-val">50</span>
+          <label for="nolan-econ-slider" class="form-label arcade-label">
+            <span>LIBERDADE ECONÔMICA</span>
+            <span class="font-mono text-cyan-400 font-bold arcade-gauge-val" id="nolan-econ-val">50</span>
           </label>
-          <input type="range" id="nolan-econ-slider" class="slider-range" min="0" max="100" value="50" aria-label="Controle de Liberdade Econômica de 0 a 100">
+          <input type="range" id="nolan-econ-slider" class="slider-range arcade-slider" min="0" max="100" value="50" aria-label="Controle de Liberdade Econômica de 0 a 100">
         </div>
 
         <div class="form-group">
-          <label for="nolan-personal-slider" class="form-label">
-            <span>Liberdade Pessoal</span>
-            <span class="font-mono text-cyan-400 font-bold" id="nolan-personal-val">50</span>
+          <label for="nolan-personal-slider" class="form-label arcade-label">
+            <span>LIBERDADE PESSOAL</span>
+            <span class="font-mono text-cyan-400 font-bold arcade-gauge-val" id="nolan-personal-val">50</span>
           </label>
-          <input type="range" id="nolan-personal-slider" class="slider-range" min="0" max="100" value="50" aria-label="Controle de Liberdade Pessoal de 0 a 100">
+          <input type="range" id="nolan-personal-slider" class="slider-range arcade-slider" min="0" max="100" value="50" aria-label="Controle de Liberdade Pessoal de 0 a 100">
         </div>
       </div>
 
-      <!-- Coluna Direita: Gráfico Interativo de Nolan (Formato Losango Original) -->
-      <div class="nolan-wrapper">
-        <h2 class="text-lg font-bold mb-4" style="margin-bottom: 1.25rem;">Diagrama de Nolan Clássico</h2>
+      <!-- Coluna Direita: Gráfico Interativo de Nolan (Formato Losango Clássico Original) -->
+      <div class="nolan-wrapper arcade-hud-box">
+        <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+        <div class="box-corner-bl"></div><div class="box-corner-br"></div>
+
+        <h2 class="arcade-box-title">
+          <span class="title-led"></span> ESPECTRO DE NOLAN ORIGINAL
+        </h2>
         
-        <div id="nolan-chart" class="nolan-chart-box" tabindex="0" role="slider" aria-label="Diagrama de Nolan clássico em formato de losango. Ajuste a posição com o mouse, toque ou setas do teclado." aria-valuemin="0" aria-valuemax="100">
+        <div id="nolan-chart" class="nolan-chart-box arcade-nolan-frame" tabindex="0" role="slider" aria-label="Diagrama de Nolan clássico em formato de losango. Ajuste a posição com o mouse, toque ou setas do teclado." aria-valuemin="0" aria-valuemax="100">
           <svg viewBox="0 0 400 400" id="nolan-svg" class="nolan-svg-chart" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="nolanGradLibertarian" x1="0%" y1="100%" x2="0%" y2="0%">
@@ -114,19 +157,16 @@
 
             <!-- Grade Interna de Isolinhas (Linhas a cada 20%) -->
             <g class="nolan-grid-lines">
-              <!-- Isoclinas de Liberdade Econômica: 20%, 40%, 60%, 80% -->
               <line x1="232" y1="328" x2="72" y2="168" class="nolan-grid-line" />
               <line x1="264" y1="296" x2="104" y2="136" class="nolan-grid-line" />
               <line x1="296" y1="264" x2="136" y2="104" class="nolan-grid-line" />
               <line x1="328" y1="232" x2="168" y2="72" class="nolan-grid-line" />
 
-              <!-- Isoclinas de Liberdade Pessoal: 20%, 40%, 60%, 80% -->
               <line x1="168" y1="328" x2="328" y2="168" class="nolan-grid-line" />
               <line x1="136" y1="296" x2="296" y2="136" class="nolan-grid-line" />
               <line x1="104" y1="264" x2="264" y2="104" class="nolan-grid-line" />
               <line x1="72" y1="232" x2="232" y2="72" class="nolan-grid-line" />
 
-              <!-- Eixos Centrais de 50% -->
               <line x1="120" y1="280" x2="280" y2="120" class="nolan-axis-center" stroke-dasharray="3 3" />
               <line x1="280" y1="280" x2="120" y2="120" class="nolan-axis-center" stroke-dasharray="3 3" />
             </g>
@@ -160,91 +200,141 @@
         </div>
 
         <!-- Resultado do Arquétipo em Tempo Real -->
-        <div class="nolan-result-box">
-          <div id="start-archetype-name" class="nolan-result-name">Centrista</div>
+        <div class="nolan-result-box arcade-result-box">
+          <div class="result-header-row">
+            <span class="result-badge-label">ARQUÉTIPO FUNDADOR:</span>
+            <div id="start-archetype-name" class="nolan-result-name arcade-gold">Centrista</div>
+          </div>
           <p id="start-archetype-desc" class="nolan-result-desc">Equilíbrio pragmático entre iniciativa privada, regulação pública e garantias civis.</p>
-          <p id="start-archetype-summary" class="text-xs text-slate-400 mt-1">Busca moderação e amortecimento de crises.</p>
+          <p id="start-archetype-summary" class="text-xs text-slate-400 mt-1 font-mono">Busca moderação e amortecimento de crises.</p>
         </div>
       </div>
 
-      <!-- Ações de Inicialização -->
-      <div class="start-actions">
-        <button id="btn-create-world" class="btn btn-primary btn-lg" type="button">
-          Criar Mundo
+      <!-- Ações de Inicialização Estilo Fliperama -->
+      <div class="start-actions arcade-actions-row">
+        <button id="btn-create-world" class="btn btn-arcade-primary btn-arcade-large" type="button">
+          <span class="btn-shine"></span>
+          <span class="btn-icon">▶</span> INICIAR NOVO MUNDO
         </button>
-        <button id="btn-continue-saved" class="btn btn-secondary btn-lg hidden" type="button">
-          Continuar Partida Salva
+        <button id="btn-continue-saved" class="btn btn-arcade-secondary btn-arcade-large hidden" type="button">
+          <span class="btn-icon">💾</span> CONTINUAR PARTIDA SALVA
         </button>
       </div>
     </div>
   </section>
 
+
   <!-- ======================================================================
-       TELA PRINCIPAL DO SIMULADOR (INICIALMENTE OCULTA)
+       TELA PRINCIPAL DO SIMULADOR (GAME COCKPIT / HUD VIEW)
        ====================================================================== -->
-  <div id="screen-main" class="hidden">
-    <!-- Cabeçalho Superior -->
-    <header class="app-header">
-      <div class="header-inner">
-        <div class="header-brand">
-          <h1 class="header-title">Horizontes Cívicos</h1>
+  <div id="screen-main" class="hidden game-screen-main">
+    
+    <!-- BARRA SUPERIOR DE HUD / COCKPIT RETRO -->
+    <header class="app-header game-hud-header">
+      <div class="header-inner hud-inner">
+        
+        <!-- Logo e Toggles Rápidos -->
+        <div class="hud-brand-box">
+          <div class="hud-logo glow-cyan">HORIZONTES CÍVICOS</div>
+          <div class="hud-toggles">
+            <button id="btn-hud-audio" class="btn-hud-toggle" type="button" title="Ligar/Desligar Efeitos Sonoros">🔊 SFX</button>
+            <button id="btn-hud-crt" class="btn-hud-toggle" type="button" title="Ligar/Desligar Filtro CRT">📺 CRT</button>
+          </div>
         </div>
 
-        <div class="header-status-group">
-          <div class="status-item">
-            <span class="status-label">Data</span>
-            <span id="hdr-date" class="status-value font-mono">Janeiro, Ano 1</span>
+        <!-- Indicadores Centrais do HUD -->
+        <div class="hud-status-bar">
+          
+          <div class="hud-stat-cell" id="hud-cell-date">
+            <div class="hud-stat-label">CALENDÁRIO</div>
+            <div id="hdr-date" class="hud-stat-value font-mono">Janeiro, Ano 1</div>
           </div>
-          <div class="status-item">
-            <span class="status-label">Sua Residência</span>
-            <span id="hdr-current-city" class="status-value text-cyan-400 font-bold">Nova Alvorada</span>
-          </div>
-          <div class="status-item">
-            <span class="status-label">Seus Recursos</span>
-            <div id="hdr-credits" class="status-value flex items-center gap-2">
-              <span class="font-bold">100</span>
-              <span class="text-xs text-slate-400">créditos</span>
+
+          <div class="hud-stat-cell" id="hud-cell-city">
+            <div class="hud-stat-label">RESIDÊNCIA ATUAL</div>
+            <div class="flex items-center gap-2">
+              <span id="hdr-current-city" class="hud-stat-value text-cyan-400 font-bold">Nova Alvorada</span>
+              <span id="hdr-citizen-badge" class="hud-mini-tag">CIDADÃO</span>
             </div>
           </div>
+
+          <div class="hud-stat-cell" id="hud-cell-credits">
+            <div class="hud-stat-label">RECURSOS DISPONÍVEIS</div>
+            <div id="hdr-credits" class="hud-stat-value flex items-center gap-2 relative">
+              <span class="font-bold text-amber-400 font-mono text-lg">100</span>
+              <span class="text-xs text-slate-400 font-mono">CR</span>
+            </div>
+          </div>
+
+          <div class="hud-stat-cell" id="hud-cell-qol">
+            <div class="hud-stat-label">QUALIDADE DE VIDA</div>
+            <div id="hdr-qol" class="hud-stat-value font-mono text-emerald-400 font-bold">55 / 100</div>
+          </div>
+
         </div>
 
-        <div class="header-controls">
-          <button id="btn-quick-save" class="btn btn-secondary btn-sm" title="Salvar partida atual no navegador">Salvar</button>
-          <button id="btn-export-json" class="btn btn-secondary btn-sm" title="Exportar partida como arquivo JSON">Exportar</button>
-          <button id="btn-import-json" class="btn btn-secondary btn-sm" title="Importar partida de um arquivo JSON">Importar</button>
-          <input type="file" id="input-file-import" class="hidden" accept=".json">
-          <button id="btn-new-world" class="btn btn-danger btn-sm" title="Iniciar um novo mundo">Novo Mundo</button>
+        <!-- Botões de Controle Rápido e Salvamento -->
+        <div class="hud-controls-group">
+          
+          <div class="hud-speed-actions">
+            <button id="hdr-btn-advance-1m" class="btn btn-arcade-action btn-sm" type="button" title="Avançar simulação em 1 mês">
+              ▶ +1 MÊS
+            </button>
+            <button id="hdr-btn-advance-12m" class="btn btn-arcade-action-secondary btn-sm" type="button" title="Avançar simulação em 12 meses (1 ano)">
+              ⏩ +1 ANO
+            </button>
+          </div>
+
+          <div class="hud-system-actions">
+            <button id="btn-quick-save" class="btn btn-hud-system btn-sm" title="Salvar partida atual no navegador">💾 Salvar</button>
+            <button id="btn-export-json" class="btn btn-hud-system btn-sm" title="Exportar partida como arquivo JSON">📤 Exportar</button>
+            <button id="btn-import-json" class="btn btn-hud-system btn-sm" title="Importar partida de um arquivo JSON">📥 Importar</button>
+            <input type="file" id="input-file-import" class="hidden" accept=".json">
+            <button id="btn-new-world" class="btn btn-hud-system btn-hud-danger btn-sm" title="Iniciar um novo mundo">✕ Novo</button>
+          </div>
+
         </div>
       </div>
     </header>
 
-    <!-- Barra de Navegação por Abas -->
-    <nav class="app-nav" aria-label="Navegação Principal do Jogo">
-      <div class="nav-inner" role="tablist">
-        <button class="nav-tab-btn active" role="tab" aria-selected="true" data-tab="tab-city" id="tab-btn-city">Minha Cidade</button>
-        <button class="nav-tab-btn" role="tab" aria-selected="false" data-tab="tab-world" id="tab-btn-world">Mundo (20 Cidades)</button>
-        <button class="nav-tab-btn" role="tab" aria-selected="false" data-tab="tab-compare" id="tab-btn-compare">Comparar</button>
-        <button class="nav-tab-btn" role="tab" aria-selected="false" data-tab="tab-diary" id="tab-btn-diary">Diário & Retrospectiva</button>
+    <!-- Barra de Navegação por Abas com Estilo Arcade Console -->
+    <nav class="app-nav game-hud-nav" aria-label="Navegação Principal do Jogo">
+      <div class="nav-inner hud-nav-inner" role="tablist">
+        <button class="nav-tab-btn arcade-tab active" role="tab" aria-selected="true" data-tab="tab-city" id="tab-btn-city">
+          <span class="tab-led"></span> [1] MINHA CIDADE
+        </button>
+        <button class="nav-tab-btn arcade-tab" role="tab" aria-selected="false" data-tab="tab-world" id="tab-btn-world">
+          <span class="tab-led"></span> [2] CONTINENTE (20 CIDADES)
+        </button>
+        <button class="nav-tab-btn arcade-tab" role="tab" aria-selected="false" data-tab="tab-compare" id="tab-btn-compare">
+          <span class="tab-led"></span> [3] COMPARADOR
+        </button>
+        <button class="nav-tab-btn arcade-tab" role="tab" aria-selected="false" data-tab="tab-diary" id="tab-btn-diary">
+          <span class="tab-led"></span> [4] CRÔNICA HISTÓRICA
+        </button>
       </div>
     </nav>
 
     <!-- Conteúdo Principal das Abas -->
-    <main class="screen-container">
+    <main class="screen-container game-viewport-main">
       
       <!-- ABA 1: MINHA CIDADE -->
       <section id="tab-city" class="tab-content-panel" role="tabpanel" aria-labelledby="tab-btn-city">
         <div class="city-main-layout">
-          <!-- Coluna Esquerda: Vista Aérea SVG e Perfil da Cidade -->
-          <div class="city-view-panel">
-            <div id="city-svg-container" class="city-svg-wrapper">
-              <!-- SVG da cidade renderizado dinamicamente -->
+          <!-- Coluna Esquerda: Vista Pixel Art SVG e Perfil da Cidade -->
+          <div class="city-view-panel arcade-hud-box">
+            <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+            <div class="box-corner-bl"></div><div class="box-corner-br"></div>
+
+            <div id="city-svg-container" class="city-svg-wrapper arcade-screen-frame">
+              <!-- SVG da cidade em pixel art renderizado dinamicamente -->
             </div>
 
             <div class="city-meta-box">
               <div class="city-header-row">
                 <div>
-                  <h2 id="mycity-name" class="city-title">Nova Alvorada</h2>
-                  <p id="mycity-geospec" class="city-subtitle">Planalto • Especialização em Tecnologia</p>
+                  <h2 id="mycity-name" class="city-title arcade-title-sm">Nova Alvorada</h2>
+                  <p id="mycity-geospec" class="city-subtitle font-mono text-cyan-300">Planalto • Especialização em Tecnologia</p>
                 </div>
                 <div id="mycity-archetype">
                   <!-- Badge do arquétipo -->
@@ -253,43 +343,46 @@
 
               <!-- Indicadores KPI Rápidos -->
               <div class="city-kpi-grid">
-                <div class="kpi-box">
-                  <span class="kpi-lbl">População</span>
+                <div class="kpi-box arcade-kpi-box">
+                  <span class="kpi-lbl font-mono">POPULAÇÃO TOTAL</span>
                   <span id="mycity-population" class="kpi-val font-mono">450.000 hab</span>
                 </div>
-                <div class="kpi-box">
-                  <span class="kpi-lbl">Qualidade de Vida</span>
+                <div class="kpi-box arcade-kpi-box">
+                  <span class="kpi-lbl font-mono">QUALIDADE DE VIDA</span>
                   <span id="mycity-qol" class="kpi-val font-mono text-cyan-400">55 / 100</span>
                 </div>
-                <div class="kpi-box">
-                  <span class="kpi-lbl">Custo de Vida</span>
-                  <span id="mycity-cost" class="kpi-val font-mono">48 pts</span>
+                <div class="kpi-box arcade-kpi-box">
+                  <span class="kpi-lbl font-mono">CUSTO DE VIDA</span>
+                  <span id="mycity-cost" class="kpi-val font-mono text-amber-400">48 pts</span>
                 </div>
               </div>
 
               <!-- Explicação Mensal em Linguagem Humana -->
-              <div class="city-monthly-explanation-box">
-                <h3 class="explanation-title">Dinâmica do Mês</h3>
+              <div class="city-monthly-explanation-box arcade-hud-well">
+                <h3 class="explanation-title font-mono">DINÂMICA DO MÊS</h3>
                 <p id="mycity-explanation" class="explanation-text">A comunidade operou dentro dos padrões normais de estabilidade.</p>
               </div>
 
-              <!-- Botões de Controle Temporal -->
+              <!-- Botões de Controle Temporal na Cidade -->
               <div class="city-time-controls">
-                <button id="btn-advance-1m" class="btn btn-primary" type="button">
-                  Avançar 1 Mês
+                <button id="btn-advance-1m" class="btn btn-arcade-action" type="button">
+                  ▶ Avançar 1 Mês
                 </button>
-                <button id="btn-advance-12m" class="btn btn-secondary" type="button">
-                  Avançar 12 Meses
+                <button id="btn-advance-12m" class="btn btn-arcade-action-secondary" type="button">
+                  ⏩ Avançar 12 Meses
                 </button>
               </div>
             </div>
           </div>
 
           <!-- Coluna Direita: Painel Completo de Indicadores Sociais -->
-          <div class="indicators-panel">
-            <div class="panel-section-title">
-              <span>Indicadores Cívicos & Sociais</span>
-              <span class="text-xs text-slate-400 font-mono">Valores de 0 a 100</span>
+          <div class="indicators-panel arcade-hud-box">
+            <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+            <div class="box-corner-bl"></div><div class="box-corner-br"></div>
+
+            <div class="panel-section-title arcade-section-title">
+              <span>INDICADORES SOCIAIS & ECONÔMICOS</span>
+              <span class="text-xs text-slate-400 font-mono">[ESCALA 0 - 100]</span>
             </div>
             <div id="mycity-indicators-grid" class="indicators-grid">
               <!-- Renderizado dinamicamente com os 12 indicadores, barras e tendências -->
@@ -298,8 +391,11 @@
         </div>
 
         <!-- Acontecimentos Recentes da Cidade -->
-        <div class="city-events-panel">
-          <h3 class="panel-section-title">Crônica & Acontecimentos Recentes da Cidade</h3>
+        <div class="city-events-panel arcade-hud-box mt-4">
+          <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+          <div class="box-corner-bl"></div><div class="box-corner-br"></div>
+
+          <h3 class="panel-section-title arcade-section-title">ACONTECIMENTOS & DIRETRIZES RECENTES</h3>
           <div id="mycity-recent-events" class="events-feed-list">
             <!-- Acontecimentos locais recentes -->
           </div>
@@ -308,10 +404,10 @@
 
       <!-- ABA 2: MUNDO (20 CIDADES) -->
       <section id="tab-world" class="tab-content-panel hidden" role="tabpanel" aria-labelledby="tab-btn-world">
-        <div class="world-toolbar">
+        <div class="world-toolbar arcade-hud-box mb-4">
           <div class="world-filters-group">
-            <label for="world-filter-archetype" class="text-xs text-slate-400 self-center">Vertente Política:</label>
-            <select id="world-filter-archetype" class="select-custom">
+            <label for="world-filter-archetype" class="text-xs text-slate-300 font-mono self-center">FILTRO:</label>
+            <select id="world-filter-archetype" class="select-custom arcade-select">
               <option value="all">Todas as Vertentes (20 cidades)</option>
               <option value="libertarian">Libertárias</option>
               <option value="conservative">Conservadoras</option>
@@ -320,8 +416,8 @@
               <option value="centrist">Centristas</option>
             </select>
 
-            <label for="world-sort-by" class="text-xs text-slate-400 self-center">Ordenar por:</label>
-            <select id="world-sort-by" class="select-custom">
+            <label for="world-sort-by" class="text-xs text-slate-300 font-mono self-center">ORDENAR:</label>
+            <select id="world-sort-by" class="select-custom arcade-select">
               <option value="qol">Qualidade de Vida (Maior)</option>
               <option value="economy">Economia</option>
               <option value="safety">Segurança</option>
@@ -332,53 +428,60 @@
           </div>
 
           <div>
-            <input type="text" id="world-search-input" class="form-input select-custom" placeholder="Buscar por nome da cidade..." style="min-width: 220px;">
+            <input type="text" id="world-search-input" class="form-input arcade-input" placeholder="Buscar por nome da metrópole..." style="min-width: 220px;">
           </div>
         </div>
 
         <!-- Mapa Esquemático das 20 Cidades -->
-        <div class="world-map-wrapper">
-          <h3 class="text-sm font-bold text-slate-400 mb-2 uppercase tracking-wide">Mapa Cartográfico do Continente (Clique para Inspecionar)</h3>
-          <div id="world-map-svg">
+        <div class="world-map-wrapper arcade-hud-box">
+          <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+          <div class="box-corner-bl"></div><div class="box-corner-br"></div>
+
+          <h3 class="arcade-box-title mb-2">
+            <span class="title-led"></span> MAPA RADAR DO CONTINENTE [CLIQUE PARA INSPECIONAR OU MIGRAR]
+          </h3>
+          <div id="world-map-svg" class="arcade-map-frame">
             <!-- SVG Cartográfico renderizado dinamicamente -->
           </div>
         </div>
 
         <!-- Grade de Cartões das Cidades -->
-        <div id="world-cards-grid" class="world-cards-grid">
+        <div id="world-cards-grid" class="world-cards-grid mt-4">
           <!-- 20 Cartões gerados dinamicamente -->
         </div>
       </section>
 
       <!-- ABA 3: COMPARAR CIDADES -->
       <section id="tab-compare" class="tab-content-panel hidden" role="tabpanel" aria-labelledby="tab-btn-compare">
-        <div class="compare-selector-bar">
+        <div class="compare-selector-bar arcade-hud-box">
           <div>
-            <label for="compare-city-a" class="form-label">Cidade 1:</label>
-            <select id="compare-city-a" class="select-custom w-full" style="width: 100%;"></select>
+            <label for="compare-city-a" class="form-label arcade-label">CIDADE 1:</label>
+            <select id="compare-city-a" class="select-custom arcade-select w-full" style="width: 100%;"></select>
           </div>
           <div>
-            <label for="compare-city-b" class="form-label">Cidade 2:</label>
-            <select id="compare-city-b" class="select-custom w-full" style="width: 100%;"></select>
+            <label for="compare-city-b" class="form-label arcade-label">CIDADE 2:</label>
+            <select id="compare-city-b" class="select-custom arcade-select w-full" style="width: 100%;"></select>
           </div>
           <div>
-            <label for="compare-city-c" class="form-label">Cidade 3 (Opcional):</label>
-            <select id="compare-city-c" class="select-custom w-full" style="width: 100%;"></select>
+            <label for="compare-city-c" class="form-label arcade-label">CIDADE 3 (OPCIONAL):</label>
+            <select id="compare-city-c" class="select-custom arcade-select w-full" style="width: 100%;"></select>
           </div>
         </div>
 
-        <div id="compare-table-container">
+        <div id="compare-table-container" class="arcade-hud-box mt-4">
           <!-- Tabela de Comparação renderizada dinamicamente -->
         </div>
       </section>
 
       <!-- ABA 4: DIÁRIO DO CIDADÃO -->
       <section id="tab-diary" class="tab-content-panel hidden" role="tabpanel" aria-labelledby="tab-btn-diary">
-        <div class="diary-toolbar">
-          <h2 class="text-lg font-bold">Memórias & Marcos Históricos do Observador</h2>
+        <div class="diary-toolbar arcade-hud-box">
+          <h2 class="arcade-box-title">
+            <span class="title-led"></span> CRÔNICA HISTÓRICA DO CIDADÃO
+          </h2>
           <div>
-            <label for="diary-filter-type" class="text-xs text-slate-400 mr-2">Filtrar:</label>
-            <select id="diary-filter-type" class="select-custom">
+            <label for="diary-filter-type" class="text-xs text-slate-300 font-mono mr-2">CATEGORIA:</label>
+            <select id="diary-filter-type" class="select-custom arcade-select">
               <option value="all">Todos os Registros</option>
               <option value="migration">Mudanças de Residência</option>
               <option value="annual">Retrospectivas Anuais</option>
@@ -388,29 +491,45 @@
           </div>
         </div>
 
-        <div id="diary-timeline-container" class="diary-timeline-container">
+        <div id="diary-timeline-container" class="diary-timeline-container mt-4">
           <!-- Linha do tempo das crônicas -->
         </div>
       </section>
 
     </main>
+
+    <!-- BARRA DE NOTÍCIAS AO VIVO (SIMCITY STYLE NEWS TICKER) -->
+    <div id="game-news-ticker" class="game-news-ticker" aria-label="Notícias ao vivo do continente">
+      <div class="ticker-badge">
+        <span class="ticker-live-dot"></span>
+        <span class="ticker-badge-text">NOTÍCIAS AO VIVO</span>
+      </div>
+      <div class="ticker-track">
+        <div id="ticker-content" class="ticker-content">
+          BEM-VINDO A HORIZONTES CÍVICOS • 20 CIDADES EM EVOLUÇÃO CONTÍNUA • ACOMPANHE AS TENSÕES POLÍTICAS, CICLOS ECONÔMICOS E EVENTOS HISTÓRICOS
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ======================================================================
-       MODAIS
+       MODAIS ESTILO TERMINAL / DESPACHO DE JOGO
        ====================================================================== -->
   
   <!-- Modal Confirmação Avançar 12 Meses -->
   <div id="modal-confirm-advance12" class="modal-container hidden" role="dialog" aria-modal="true" aria-labelledby="title-adv12">
     <div class="modal-backdrop"></div>
-    <div class="modal-dialog">
-      <h3 id="title-adv12" class="modal-title">Avançar 12 Meses (1 Ano)</h3>
-      <p class="text-sm text-slate-300 leading-relaxed">
-        Você está prestes a simular a passagem de um ano inteiro. Todas as 20 cidades evoluirão simultaneamente através de 12 ciclos mensais e uma retrospectiva anual será gerada no seu diário.
+    <div class="modal-dialog arcade-modal-box">
+      <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+      <div class="box-corner-bl"></div><div class="box-corner-br"></div>
+      <h3 id="title-adv12" class="modal-title arcade-title-sm text-cyan-400">AVANÇAR CICLO ANUAL (12 MESES)</h3>
+      <p class="text-sm text-slate-300 leading-relaxed font-mono">
+        Você está prestes a simular a passagem de um ano completo. Todas as 20 metrópoles evoluirão simultaneamente através de 12 iterações dinâmicas, calculando migrações populacionais e gerando uma retrospectiva histórica.
       </p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary btn-modal-close" type="button">Cancelar</button>
-        <button id="btn-confirm-advance12" class="btn btn-primary" type="button">Confirmar e Avançar</button>
+      <div class="modal-actions arcade-modal-actions">
+        <button class="btn btn-arcade-secondary btn-modal-close" type="button">Cancelar</button>
+        <button id="btn-confirm-advance12" class="btn btn-arcade-primary" type="button">▶ Confirmar e Avançar</button>
       </div>
     </div>
   </div>
@@ -418,14 +537,16 @@
   <!-- Modal Confirmação Reiniciar Jogo -->
   <div id="modal-confirm-reset" class="modal-container hidden" role="dialog" aria-modal="true" aria-labelledby="title-reset">
     <div class="modal-backdrop"></div>
-    <div class="modal-dialog">
-      <h3 id="title-reset" class="modal-title">Reiniciar e Criar Novo Mundo</h3>
-      <p class="text-sm text-slate-300 leading-relaxed">
-        Atenção: ao iniciar um novo mundo, o progresso salvo da partida atual será substituído. Tem certeza de que deseja recomeçar?
+    <div class="modal-dialog arcade-modal-box">
+      <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+      <div class="box-corner-bl"></div><div class="box-corner-br"></div>
+      <h3 id="title-reset" class="modal-title arcade-title-sm text-rose-400">REINICIAR CONTINENTE</h3>
+      <p class="text-sm text-slate-300 leading-relaxed font-mono">
+        Atenção: ao iniciar um novo continente, o progresso da partida atual salvo no navegador será reinicializado. Deseja prosseguir com uma nova matriz fundadora?
       </p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary btn-modal-close" type="button">Cancelar</button>
-        <button id="btn-confirm-reset" class="btn btn-danger" type="button">Sim, Reiniciar</button>
+      <div class="modal-actions arcade-modal-actions">
+        <button class="btn btn-arcade-secondary btn-modal-close" type="button">Cancelar</button>
+        <button id="btn-confirm-reset" class="btn btn-arcade-danger" type="button">Sim, Reiniciar</button>
       </div>
     </div>
   </div>
@@ -433,24 +554,51 @@
   <!-- Modal Detalhes e Migração de Cidade -->
   <div id="modal-city-inspect" class="modal-container hidden" role="dialog" aria-modal="true" aria-labelledby="city-inspect-content">
     <div class="modal-backdrop"></div>
-    <div class="modal-dialog">
+    <div class="modal-dialog arcade-modal-box modal-lg">
+      <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
+      <div class="box-corner-bl"></div><div class="box-corner-br"></div>
       <div id="city-inspect-content">
         <!-- Renderizado dinamicamente -->
       </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary btn-modal-close" type="button">Fechar</button>
+      <div class="modal-actions arcade-modal-actions">
+        <button class="btn btn-arcade-secondary btn-modal-close" type="button">Fechar Relatório</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast de Notificação -->
-  <div id="app-toast" class="toast-notice hidden" role="status" aria-live="polite"></div>
+  <!-- Modal Despacho Extraordinário / Alerta de Notícia de Última Hora -->
+  <div id="modal-event-bulletin" class="modal-container hidden" role="dialog" aria-modal="true" aria-labelledby="bulletin-title">
+    <div class="modal-backdrop"></div>
+    <div class="modal-dialog arcade-modal-box modal-bulletin">
+      <div class="bulletin-hazard-stripe"></div>
+      <div class="bulletin-inner">
+        <div class="bulletin-tag-row">
+          <span class="bulletin-flash">URGENTE • FLASH INFORMATIVO</span>
+          <span id="bulletin-date" class="font-mono text-xs text-slate-300">Mês 3, Ano 1</span>
+        </div>
+        <h3 id="bulletin-title" class="bulletin-headline">PROTESTOS MASSIVOS TOMAM AVENIDAS CENTRAIS</h3>
+        <p id="bulletin-city" class="bulletin-location font-mono text-cyan-400">Metrópole: Nova Alvorada</p>
+        <div id="bulletin-body" class="bulletin-text">
+          Manifestações populares em larga escala exigem transparência institucional e reformas econômicas imediatas.
+        </div>
+        <div id="bulletin-impact" class="bulletin-impact-box">
+          <strong>IMPACTO IMEDIATO:</strong> Estabilidade Social -12 • Segurança Pública -8
+        </div>
+      </div>
+      <div class="modal-actions arcade-modal-actions">
+        <button id="btn-close-bulletin" class="btn btn-arcade-primary" type="button">Ciente do Despacho</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de Notificação Retro -->
+  <div id="app-toast" class="toast-notice arcade-toast hidden" role="status" aria-live="polite"></div>
 
   <!-- ======================================================================
        RODAPÉ COM DISCLAIMER OBRIGATÓRIO
        ====================================================================== -->
-  <footer class="app-footer">
-    <p class="footer-disclaimer">
+  <footer class="app-footer game-footer">
+    <p class="footer-disclaimer font-mono">
       “Este é um modelo ficcional e simplificado. Ele não pretende prever o desempenho de sociedades reais.”
     </p>
   </footer>

@@ -41,11 +41,12 @@ Polis20/
 ├── styles.css              # Design System (Atlas político futurista, modo escuro, layout responsivo)
 ├── js/
 │   ├── rng.js              # Gerador PRNG determinístico (Mulberry32 + hash de semente cyrb53)
-│   ├── data.js             # 40+ nomes de cidades, 8 geografias, 10 especializações, 32 eventos, 5 arquétipos
+│   ├── data.js             # 45 nomes de cidades, 8 geografias, 10 especializações, 32 eventos, 5 arquétipos
 │   ├── simulation.js       # Motor puro da simulação mensal (inércia, relações cruzadas, migração, créditos)
-│   ├── svg.js              # Renderizador procedural de SVG com 5 cenas base e camadas de estado dinâmicas
+│   ├── svg.js              # Ilustrações urbanas em Pixel Art 480x270 com animações dinâmicas contínuas e de eventos
+│   ├── audio.js            # Sintetizador procedural de áudio (Web Audio API: bipes, avanços, fanfarras, sirenes, moedas)
 │   ├── storage.js          # Persistência em localStorage e importação/exportação de JSON versionado
-│   ├── ui.js               # Gerenciador de eventos do DOM, Diagrama de Nolan, mapas e tabelas
+│   ├── ui.js               # HUD de jogo, Diagrama de Nolan clássico 45°, News Ticker SimCity, números flutuantes e modais
 │   └── app.js              # Orquestrador do ciclo de vida da aplicação
 └── README.md               # Documentação técnica e guia de extensão
 ```

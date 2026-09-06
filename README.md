@@ -57,10 +57,12 @@ Polis20/
 
 O jogo simula **20 cidades fictícias** simultaneamente. O jogador é um cidadão e observador do continente que começa morando na cidade fundada por ele.
 
-### A. Eixos Políticos (Diagrama de Nolan)
-- **Liberdade Econômica (0 a 100):** Mede o grau de desregulamentação comercial e primazia da iniciativa privada versus coordenação, serviços universais e planejamento coletivo.
-- **Liberdade Pessoal (0 a 100):** Mede o grau de autonomia individual e tolerância à diversidade de costumes versus controle normativo e disciplina cívica.
-- Classificações: **Libertária**, **Conservadora**, **Progressista**, **Estatista** e **Centrista**.
+### A. Eixos Políticos e Questionário do Diagrama de Nolan
+- A orientação política da metrópole inicial do jogador é determinada pelo **Questionário Clássico de Nolan** (10 proposições: 5 sobre liberdades pessoais e 5 sobre liberdades econômicas).
+- Cada questão pode ser respondida com **Concordo (+20 pts)**, **Talvez (+10 pts)** ou **Discordo (0 pts)**, totalizando de 0 a 100 pontos por eixo:
+  - **Liberdade Pessoal (0 a 100):** Mede o grau de autonomia individual e tolerância à diversidade de costumes versus controle normativo e disciplina cívica.
+  - **Liberdade Econômica (0 a 100):** Mede o grau de desregulamentação comercial e primazia da iniciativa privada versus coordenação, serviços universais e planejamento coletivo.
+- O resultado projeta em tempo real a posição no **Diagrama de Nolan Clássico rotacionado a 45°**, classificando entre as 5 vertentes: **Libertária**, **Conservadora**, **Progressista**, **Estatista** e **Centrista**. Predefinições rápidas também estão disponíveis na interface.
 
 ### B. Fórmula de Mudança Mensal de Indicadores
 A cada mês, cada um dos 12 indicadores (Economia, Empregos, Segurança, Saúde, Educação, Moradia, Igualdade, Infraestrutura, Meio Ambiente, Liberdade Pessoal, Estabilidade e Confiança) é atualizado pela seguinte fórmula:

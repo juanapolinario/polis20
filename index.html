@@ -88,20 +88,51 @@
           <input type="text" id="input-seed" class="form-input arcade-input font-mono" placeholder="Ex: Utopia2026, 42, Atlas...">
         </div>
 
-        <div class="form-group" style="margin-top: 1.5rem;">
-          <label for="nolan-econ-slider" class="form-label arcade-label">
-            <span>LIBERDADE ECONÔMICA</span>
-            <span class="font-mono text-cyan-400 font-bold arcade-gauge-val" id="nolan-econ-val">50</span>
-          </label>
-          <input type="range" id="nolan-econ-slider" class="slider-range arcade-slider" min="0" max="100" value="50" aria-label="Controle de Liberdade Econômica de 0 a 100">
-        </div>
+        <!-- QUESTIONÁRIO DO DIAGRAMA DE NOLAN (Substitui os sliders manuais) -->
+        <div class="nolan-quiz-container" id="nolan-quiz-container">
+          <div class="quiz-header-row">
+            <div>
+              <h3 class="arcade-quiz-title">
+                <span class="title-led"></span> QUESTIONÁRIO DE NOLAN
+              </h3>
+              <p class="quiz-subtitle">Responda às 10 proposições para calibrar a matriz ideológica de sua metrópole.</p>
+            </div>
+            <div class="quiz-score-gauges">
+              <div class="quiz-score-pill" title="Pontuação acumulada de Liberdade Pessoal">
+                <span class="quiz-score-lbl">PESSOAL:</span>
+                <span class="quiz-score-num text-cyan-400 font-mono font-bold" id="quiz-personal-score">50%</span>
+              </div>
+              <div class="quiz-score-pill" title="Pontuação acumulada de Liberdade Econômica">
+                <span class="quiz-score-lbl">ECONÔMICA:</span>
+                <span class="quiz-score-num text-amber-400 font-mono font-bold" id="quiz-econ-score">50%</span>
+              </div>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="nolan-personal-slider" class="form-label arcade-label">
-            <span>LIBERDADE PESSOAL</span>
-            <span class="font-mono text-cyan-400 font-bold arcade-gauge-val" id="nolan-personal-val">50</span>
-          </label>
-          <input type="range" id="nolan-personal-slider" class="slider-range arcade-slider" min="0" max="100" value="50" aria-label="Controle de Liberdade Pessoal de 0 a 100">
+          <!-- Abas de Navegação dos Eixos do Questionário -->
+          <div class="quiz-tabs-bar" role="tablist">
+            <button type="button" class="quiz-tab-btn active" id="btn-quiz-tab-personal" data-quiz-axis="personal">
+              <span class="quiz-tab-dot"></span> 🌐 LIBERDADES PESSOAIS (5)
+            </button>
+            <button type="button" class="quiz-tab-btn" id="btn-quiz-tab-economic" data-quiz-axis="economic">
+              <span class="quiz-tab-dot"></span> 💼 LIBERDADES ECONÔMICAS (5)
+            </button>
+          </div>
+
+          <!-- Barra de Predefinições Rápidas de Ideologias -->
+          <div class="quiz-presets-bar">
+            <span class="quiz-presets-lbl font-mono">PREDEFINIR:</span>
+            <button type="button" class="btn-quiz-preset" data-preset="centrist">⚖️ Centro</button>
+            <button type="button" class="btn-quiz-preset" data-preset="libertarian">🗽 Libertário</button>
+            <button type="button" class="btn-quiz-preset" data-preset="progressive">🌿 Progressista</button>
+            <button type="button" class="btn-quiz-preset" data-preset="conservative">🏛️ Conservador</button>
+            <button type="button" class="btn-quiz-preset" data-preset="statist">🚩 Estatista</button>
+          </div>
+
+          <!-- Lista de Perguntas (Renderizada dinamicamente com 3 botões táticos por questão) -->
+          <div id="quiz-questions-list" class="quiz-questions-list">
+            <!-- Renderizado dinamicamente por UIManager -->
+          </div>
         </div>
       </div>
 

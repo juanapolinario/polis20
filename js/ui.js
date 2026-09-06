@@ -4,7 +4,7 @@
  * efeitos sonoros procedurais (Web Audio API), SimCity News Ticker, modais e números flutuantes.
  */
 
-import { INDICATOR_DEFS, POLITICAL_ARCHETYPES, classifyPolitics, GEOGRAPHIES, SPECIALIZATIONS } from './data.js';
+import { INDICATOR_DEFS, POLITICAL_ARCHETYPES, classifyPolitics, GEOGRAPHIES, SPECIALIZATIONS, NOLAN_QUIZ_QUESTIONS } from './data.js';
 import { renderCitySvg } from './svg.js';
 import { calculateMigrationCost, calculateCityDistance } from './simulation.js';
 import { sfx } from './audio.js';
@@ -16,8 +16,16 @@ export class UIManager {
     this.selectedCompareCityIds = [0, 1]; // IDs default para comparação
     this.worldFilter = { archetype: 'all', search: '', sort: 'qol' };
     this.inspectingCityId = null;
-    this.nolanEcon = 50;
+
+    // Estado do Questionário Clássico de Nolan (5 questões pessoais e 5 econômicas)
+    this.activeQuizAxis = 'personal'; // 'personal' | 'economic'
+    this.quizAnswers = {
+      personal: { p1: 10, p2: 10, p3: 10, p4: 10, p5: 10 },
+      economic: { e1: 10, e2: 10, e3: 10, e4: 10, e5: 10 }
+    };
     this.nolanPersonal = 50;
+    this.nolanEcon = 50;
+
     this.lastShownBulletinEventKey = null;
     this.lastNolanAudioTime = 0;
   }
@@ -84,15 +92,13 @@ export class UIManager {
     if (btnHudCrt) btnHudCrt.addEventListener('click', toggleCrt);
   }
 
-  // Configura a tela de criação do mundo e o Diagrama de Nolan clássico (45°)
+  // Configura a tela de criação do mundo e o Questionário Clássico de Nolan integrado ao Losango (45°)
   setupStartScreenEvents() {
-    const econSlider = document.getElementById('nolan-econ-slider');
-    const personalSlider = document.getElementById('nolan-personal-slider');
-    const econVal = document.getElementById('nolan-econ-val');
-    const personalVal = document.getElementById('nolan-personal-val');
     const nolanChart = document.getElementById('nolan-chart');
     const nolanSvg = document.getElementById('nolan-svg');
     const markerGroup = document.getElementById('nolan-marker-group');
+    const personalScoreEl = document.getElementById('quiz-personal-score');
+    const econScoreEl = document.getElementById('quiz-econ-score');
 
     const playThrottledClick = () => {
       const now = Date.now();
@@ -106,10 +112,8 @@ export class UIManager {
       this.nolanEcon = Math.round(Math.min(Math.max(econ, 0), 100));
       this.nolanPersonal = Math.round(Math.min(Math.max(personal, 0), 100));
 
-      if (econSlider) econSlider.value = this.nolanEcon;
-      if (personalSlider) personalSlider.value = this.nolanPersonal;
-      if (econVal) econVal.textContent = this.nolanEcon;
-      if (personalVal) personalVal.textContent = this.nolanPersonal;
+      if (personalScoreEl) personalScoreEl.textContent = `${this.nolanPersonal}%`;
+      if (econScoreEl) econScoreEl.textContent = `${this.nolanEcon}%`;
 
       // Geometria clássica de David Nolan (Losango a 45 graus):
       // Vértice Superior (Libertária: 100, 100) -> (200, 40)
@@ -143,14 +147,109 @@ export class UIManager {
       }
     };
 
-    if (econSlider) {
-      econSlider.addEventListener('input', (e) => updateNolanUI(Number(e.target.value), this.nolanPersonal, true));
-    }
-    if (personalSlider) {
-      personalSlider.addEventListener('input', (e) => updateNolanUI(this.nolanEcon, Number(e.target.value), true));
-    }
+    // Renderizador das Perguntas do Questionário de Nolan para o eixo ativo
+    const renderQuizQuestions = () => {
+      const listEl = document.getElementById('quiz-questions-list');
+      if (!listEl) return;
 
-    // Suporte a clique direto e arrasto no gráfico de Nolan
+      const questions = NOLAN_QUIZ_QUESTIONS[this.activeQuizAxis] || [];
+      const answersForAxis = this.quizAnswers[this.activeQuizAxis] || {};
+
+      listEl.innerHTML = questions.map(q => {
+        const currentVal = answersForAxis[q.id] ?? 10;
+        return `
+          <div class="quiz-question-card" data-qid="${q.id}">
+            <div class="quiz-q-header">
+              <span class="quiz-q-num font-mono">[${q.num}/5]</span>
+              <span class="quiz-q-topic">${q.topic.toUpperCase()}</span>
+            </div>
+            <p class="quiz-q-statement">"${q.statement}"</p>
+            <div class="quiz-options-group" role="group" aria-label="Opções para ${q.topic}">
+              <button type="button" class="btn-quiz-opt btn-opt-disagree ${currentVal === 0 ? 'active' : ''}" data-val="0" data-qid="${q.id}">
+                <span class="opt-icon">✕</span> DISCORDO (0)
+              </button>
+              <button type="button" class="btn-quiz-opt btn-opt-neutral ${currentVal === 10 ? 'active' : ''}" data-val="10" data-qid="${q.id}">
+                <span class="opt-icon">⚖</span> TALVEZ (10)
+              </button>
+              <button type="button" class="btn-quiz-opt btn-opt-agree ${currentVal === 20 ? 'active' : ''}" data-val="20" data-qid="${q.id}">
+                <span class="opt-icon">✓</span> CONCORDO (20)
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      listEl.querySelectorAll('.btn-quiz-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const qid = btn.getAttribute('data-qid');
+          const val = Number(btn.getAttribute('data-val'));
+
+          this.quizAnswers[this.activeQuizAxis][qid] = val;
+          sfx.play('click');
+
+          // Recalcula pontuações dos eixos (0 a 100 cada)
+          this.nolanPersonal = Object.values(this.quizAnswers.personal).reduce((a, b) => a + b, 0);
+          this.nolanEcon = Object.values(this.quizAnswers.economic).reduce((a, b) => a + b, 0);
+
+          updateNolanUI(this.nolanEcon, this.nolanPersonal, false);
+          renderQuizQuestions();
+        });
+      });
+    };
+
+    // Alternância entre as abas Eixo Pessoal e Eixo Econômico
+    const tabPersonalBtn = document.getElementById('btn-quiz-tab-personal');
+    const tabEconBtn = document.getElementById('btn-quiz-tab-economic');
+
+    const switchQuizAxis = (axis) => {
+      this.activeQuizAxis = axis;
+      if (tabPersonalBtn) tabPersonalBtn.classList.toggle('active', axis === 'personal');
+      if (tabEconBtn) tabEconBtn.classList.toggle('active', axis === 'economic');
+      sfx.play('click');
+      renderQuizQuestions();
+    };
+
+    if (tabPersonalBtn) tabPersonalBtn.addEventListener('click', () => switchQuizAxis('personal'));
+    if (tabEconBtn) tabEconBtn.addEventListener('click', () => switchQuizAxis('economic'));
+
+    // Predefinições rápidas de respostas do questionário
+    document.querySelectorAll('.btn-quiz-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.getAttribute('data-preset');
+        sfx.play('coins');
+
+        switch (preset) {
+          case 'centrist':
+            this.quizAnswers.personal = { p1: 10, p2: 10, p3: 10, p4: 10, p5: 10 };
+            this.quizAnswers.economic = { e1: 10, e2: 10, e3: 10, e4: 10, e5: 10 };
+            break;
+          case 'libertarian':
+            this.quizAnswers.personal = { p1: 20, p2: 20, p3: 20, p4: 20, p5: 20 };
+            this.quizAnswers.economic = { e1: 20, e2: 20, e3: 20, e4: 20, e5: 20 };
+            break;
+          case 'progressive':
+            this.quizAnswers.personal = { p1: 20, p2: 20, p3: 20, p4: 20, p5: 20 };
+            this.quizAnswers.economic = { e1: 0, e2: 0, e3: 0, e4: 0, e5: 0 };
+            break;
+          case 'conservative':
+            this.quizAnswers.personal = { p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 };
+            this.quizAnswers.economic = { e1: 20, e2: 20, e3: 20, e4: 20, e5: 20 };
+            break;
+          case 'statist':
+            this.quizAnswers.personal = { p1: 0, p2: 0, p3: 0, p4: 0, p5: 0 };
+            this.quizAnswers.economic = { e1: 0, e2: 0, e3: 0, e4: 0, e5: 0 };
+            break;
+        }
+
+        this.nolanPersonal = Object.values(this.quizAnswers.personal).reduce((a, b) => a + b, 0);
+        this.nolanEcon = Object.values(this.quizAnswers.economic).reduce((a, b) => a + b, 0);
+
+        updateNolanUI(this.nolanEcon, this.nolanPersonal, false);
+        renderQuizQuestions();
+      });
+    });
+
+    // Suporte a clique direto e arrasto no gráfico de Nolan (atualiza o marcador e sincroniza)
     if (nolanChart && nolanSvg) {
       const handleChartInteract = (e) => {
         const rect = nolanSvg.getBoundingClientRect();
@@ -160,7 +259,6 @@ export class UIManager {
         const svgClickX = ((clientX - rect.left) / rect.width) * 400;
         const svgClickY = ((clientY - rect.top) / rect.height) * 400;
 
-        // Inversão analítica das coordenadas do Losango de Nolan
         const eFloat = (160 + svgClickX - svgClickY) / 320;
         const pFloat = (560 - svgClickX - svgClickY) / 320;
 
@@ -197,6 +295,10 @@ export class UIManager {
         if (e.key === 'ArrowDown') { updateNolanUI(this.nolanEcon, this.nolanPersonal - step, true); e.preventDefault(); }
       });
     }
+
+    // Inicialização da lista de perguntas e valores iniciais
+    renderQuizQuestions();
+    updateNolanUI(50, 50, false);
 
     // Botão Criar Mundo
     const btnCreate = document.getElementById('btn-create-world');

@@ -144,6 +144,76 @@ export function classifyPolitics(econ, personal) {
   return POLITICAL_ARCHETYPES[closest];
 }
 
+// Questionário Clássico do Diagrama de Nolan (5 Questões Pessoais e 5 Econômicas)
+// Pontuação por resposta: Concordo (+20), Talvez/Neutro (+10), Discordo (0)
+// Total por eixo: 0 a 100 pontos
+export const NOLAN_QUIZ_QUESTIONS = {
+  personal: [
+    {
+      id: 'p1',
+      num: 1,
+      topic: 'Liberdade de Expressão',
+      statement: 'O governo não deve censurar a imprensa, livros, rádio, cinema, artes ou a internet sob nenhuma justificativa moral ou ideológica.'
+    },
+    {
+      id: 'p2',
+      num: 2,
+      topic: 'Serviço Militar',
+      statement: 'As forças armadas devem ser estritamente voluntárias e profissionais; o alistamento militar compulsório deve ser abolido.'
+    },
+    {
+      id: 'p3',
+      num: 3,
+      topic: 'Vida Privada e Relacionamentos',
+      statement: 'O Estado não deve regular nem interferir em casamentos, uniões civis e escolhas de convivência entre adultos consentâneos.'
+    },
+    {
+      id: 'p4',
+      num: 4,
+      topic: 'Privacidade e Vigilância',
+      statement: 'O direito à privacidade individual é inviolável; programas de vigilância governamental em massa sem ordem judicial devem ser proibidos.'
+    },
+    {
+      id: 'p5',
+      num: 5,
+      topic: 'Autonomia Pessoal e Hábitos',
+      statement: 'Adultos devem ser livres para tomar decisões sobre seu próprio corpo, saúde e estilo de vida, desde que não agridam terceiros.'
+    }
+  ],
+  economic: [
+    {
+      id: 'e1',
+      num: 1,
+      topic: 'Livre Concorrência',
+      statement: 'Empresas devem operar em livre mercado, sem subsídios governamentais, salvamentos corporativos ou monopólios protegidos pelo Estado.'
+    },
+    {
+      id: 'e2',
+      num: 2,
+      topic: 'Livre Comércio Internacional',
+      statement: 'O comércio exterior de mercadorias e serviços deve ser livre de tarifas alfandegárias protecionistas, embargos ou cotas punitivas.'
+    },
+    {
+      id: 'e3',
+      num: 3,
+      topic: 'Tributação e Orçamento',
+      statement: 'A carga tributária deve ser reduzida ao mínimo estritamente necessário, permitindo que cidadãos e empresas retenham os frutos de seu trabalho.'
+    },
+    {
+      id: 'e4',
+      num: 4,
+      topic: 'Previdência e Investimentos',
+      statement: 'Aposentadorias e poupanças devem ser geridas livremente pelos cidadãos, sem imposição de esquemas previdenciários estatais compulsórios.'
+    },
+    {
+      id: 'e5',
+      num: 5,
+      topic: 'Preços e Desestatização',
+      statement: 'Preços, aluguéis e salários devem ser definidos pela oferta e demanda no mercado, sem tabelamento estatal ou estatais deficitárias.'
+    }
+  ]
+};
+
 // 8 Tipos de Geografia
 export const GEOGRAPHIES = [
   {

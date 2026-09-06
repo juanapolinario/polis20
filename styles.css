@@ -509,6 +509,278 @@ body.crt-active .crt-overlay {
   margin-top: 1.5rem;
 }
 
+/* ==========================================================================
+   Questionário do Diagrama de Nolan (Quiz Interativo)
+   ========================================================================== */
+.nolan-quiz-container {
+  margin-top: 1.25rem;
+  background: rgba(6, 11, 22, 0.75);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
+}
+
+.quiz-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.arcade-quiz-title {
+  font-family: var(--font-arcade);
+  font-size: 0.8rem;
+  color: var(--accent-cyan);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.quiz-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.quiz-score-gauges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.quiz-score-pill {
+  background: rgba(8, 14, 28, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+.quiz-score-lbl {
+  font-family: var(--font-arcade);
+  font-size: 0.55rem;
+  color: var(--text-subtle);
+  letter-spacing: 0.05em;
+}
+
+.quiz-score-num {
+  font-size: 0.95rem;
+}
+
+/* Abas de Eixos do Questionário */
+.quiz-tabs-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.5rem;
+}
+
+.quiz-tab-btn {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font-game-ui);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+}
+
+.quiz-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--text-subtle);
+}
+
+.quiz-tab-btn:hover {
+  background: rgba(30, 41, 59, 0.8);
+  color: #ffffff;
+}
+
+.quiz-tab-btn.active {
+  background: rgba(14, 165, 233, 0.15);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+.quiz-tab-btn.active .quiz-tab-dot {
+  background-color: var(--accent-cyan);
+  box-shadow: 0 0 6px var(--accent-cyan);
+}
+
+/* Predefinições Rápidas */
+.quiz-presets-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.quiz-presets-lbl {
+  font-size: 0.65rem;
+  color: var(--text-subtle);
+  font-family: var(--font-arcade);
+  margin-right: 0.25rem;
+}
+
+.btn-quiz-preset {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: #cbd5e1;
+  font-family: var(--font-game-ui);
+  font-size: 0.72rem;
+  padding: 0.25rem 0.55rem;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.btn-quiz-preset:hover {
+  border-color: var(--accent-amber);
+  color: #ffffff;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.btn-quiz-preset:active {
+  transform: translateY(1px);
+}
+
+/* Lista e Cards de Perguntas */
+.quiz-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-height: 440px;
+  overflow-y: auto;
+  padding-right: 0.4rem;
+}
+
+.quiz-questions-list::-webkit-scrollbar {
+  width: 6px;
+}
+.quiz-questions-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+}
+.quiz-questions-list::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.25);
+  border-radius: 3px;
+}
+.quiz-questions-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.5);
+}
+
+.quiz-question-card {
+  background: rgba(8, 14, 28, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  transition: border-color 0.15s ease;
+}
+
+.quiz-question-card:hover {
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.quiz-q-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.quiz-q-num {
+  font-size: 0.68rem;
+  color: var(--accent-cyan);
+  font-family: var(--font-arcade);
+}
+
+.quiz-q-topic {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.quiz-q-statement {
+  font-size: 0.84rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+  margin-bottom: 0.75rem;
+}
+
+.quiz-options-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+}
+
+.btn-quiz-opt {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font-game-ui);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.45rem 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.btn-quiz-opt:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-quiz-opt:active {
+  transform: translateY(1px);
+}
+
+.btn-quiz-opt.active.btn-opt-disagree {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #fca5a5;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.35), inset 0 0 6px rgba(239, 68, 68, 0.2);
+}
+
+.btn-quiz-opt.active.btn-opt-neutral {
+  background: rgba(148, 163, 184, 0.2);
+  border-color: #cbd5e1;
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(203, 213, 225, 0.3), inset 0 0 6px rgba(148, 163, 184, 0.2);
+}
+
+.btn-quiz-opt.active.btn-opt-agree {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #6ee7b7;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.35), inset 0 0 6px rgba(16, 185, 129, 0.2);
+}
+
+.opt-icon {
+  font-weight: bold;
+}
+
 /* Gráfico de Nolan Interativo (Formato Losango Original) */
 .nolan-wrapper {
   display: flex;

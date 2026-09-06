@@ -739,38 +739,60 @@ export class UIManager {
       cityExplEl.textContent = currentCity.lastMonthExplanation || 'Metrópole operando dentro dos parâmetros institucionais esperados.';
     }
 
-    // 3. Grid de Indicadores com Barras e Símbolos Acessíveis (↑, →, ↓)
+    // 3. Grid de Indicadores com Barras e Símbolos Acessíveis (▲, ─, ▼)
     if (indicatorsGrid) {
+      const INDICATOR_ICONS = {
+        economy: '📈',
+        jobs: '💼',
+        security: '🛡️',
+        health: '🏥',
+        education: '🎓',
+        housing: '🏠',
+        equality: '⚖️',
+        infrastructure: '⚡',
+        environment: '🌱',
+        civicFreedom: '🕊️',
+        politicalStability: '🏛️',
+        publicTrust: '🤝'
+      };
+
       indicatorsGrid.innerHTML = Object.entries(INDICATOR_DEFS).map(([key, def]) => {
         const val = currentCity.indicators[key] ?? 50;
         const trend = currentCity.trends[key] ?? 0;
+        const icon = INDICATOR_ICONS[key] || '📊';
         
-        let trendSymbol = '→';
+        let trendSymbol = '─';
         let trendClass = 'trend-stable';
         let trendAria = 'estável';
         if (trend > 0) {
-          trendSymbol = '↑';
+          trendSymbol = '▲';
           trendClass = 'trend-up';
           trendAria = 'em alta';
         } else if (trend < 0) {
-          trendSymbol = '↓';
+          trendSymbol = '▼';
           trendClass = 'trend-down';
           trendAria = 'em queda';
         }
 
+        let scoreClass = 'score-mid';
+        if (val >= 60) scoreClass = 'score-high';
+        else if (val < 40) scoreClass = 'score-low';
+
         return `
-          <div class="indicator-card">
+          <div class="indicator-card" title="${def.name}: ${val}/100. ${def.shortDesc}">
             <div class="indicator-header">
-              <span class="indicator-name">${def.name}</span>
+              <div class="indicator-title-group">
+                <span class="indicator-icon">${icon}</span>
+                <span class="indicator-name">${def.name}</span>
+              </div>
               <div class="indicator-val-box">
-                <span class="indicator-val font-mono">${val}</span>
+                <span class="indicator-val font-mono ${scoreClass}">${val}</span>
                 <span class="trend-symbol ${trendClass}" aria-label="Tendência: ${trendAria}">${trendSymbol}</span>
               </div>
             </div>
             <div class="indicator-bar-track" role="progressbar" aria-valuenow="${val}" aria-valuemin="0" aria-valuemax="100" aria-label="${def.name}: ${val}">
-              <div class="indicator-bar-fill" style="width: ${val}%;"></div>
+              <div class="indicator-bar-fill ${scoreClass}" style="width: ${val}%;"></div>
             </div>
-            <p class="indicator-desc">${def.shortDesc}</p>
           </div>
         `;
       }).join('');

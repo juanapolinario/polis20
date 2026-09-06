@@ -309,7 +309,7 @@
         
         <!-- Logo e Toggles Rápidos -->
         <div class="hud-brand-box">
-          <div class="hud-logo glow-cyan">HORIZONTES CÍVICOS</div>
+          <div class="hud-logo">HORIZONTES CÍVICOS</div>
           <div class="hud-toggles">
             <button id="btn-hud-audio" class="btn-hud-toggle" type="button" title="Ligar/Desligar Efeitos Sonoros">🔊 SFX</button>
             <button id="btn-hud-crt" class="btn-hud-toggle" type="button" title="Ligar/Desligar Filtro CRT">📺 CRT</button>
@@ -318,14 +318,13 @@
 
         <!-- Indicadores Centrais do HUD -->
         <div class="hud-status-bar">
-          
           <div class="hud-stat-cell" id="hud-cell-date">
-            <div class="hud-stat-label">CALENDÁRIO</div>
-            <div id="hdr-date" class="hud-stat-value font-mono">Janeiro, Ano 1</div>
+            <span class="hud-stat-label">CALENDÁRIO</span>
+            <span id="hdr-date" class="hud-stat-value font-mono">Janeiro, Ano 1</span>
           </div>
 
           <div class="hud-stat-cell" id="hud-cell-city">
-            <div class="hud-stat-label">RESIDÊNCIA ATUAL</div>
+            <span class="hud-stat-label">RESIDÊNCIA ATUAL</span>
             <div class="flex items-center gap-2">
               <span id="hdr-current-city" class="hud-stat-value text-cyan-400 font-bold">Nova Alvorada</span>
               <span id="hdr-citizen-badge" class="hud-mini-tag">CIDADÃO</span>
@@ -333,7 +332,7 @@
           </div>
 
           <div class="hud-stat-cell" id="hud-cell-credits">
-            <div class="hud-stat-label">RECURSOS DISPONÍVEIS</div>
+            <span class="hud-stat-label">RECURSOS DISPONÍVEIS</span>
             <div id="hdr-credits" class="hud-stat-value flex items-center gap-2 relative">
               <span class="font-bold text-amber-400 font-mono text-lg">100</span>
               <span class="text-xs text-slate-400 font-mono">CR</span>
@@ -341,15 +340,13 @@
           </div>
 
           <div class="hud-stat-cell" id="hud-cell-qol">
-            <div class="hud-stat-label">QUALIDADE DE VIDA</div>
-            <div id="hdr-qol" class="hud-stat-value font-mono text-emerald-400 font-bold">55 / 100</div>
+            <span class="hud-stat-label">QUALIDADE DE VIDA</span>
+            <span id="hdr-qol" class="hud-stat-value font-mono text-emerald-400 font-bold">55 / 100</span>
           </div>
-
         </div>
 
         <!-- Botões de Controle Rápido e Salvamento -->
         <div class="hud-controls-group">
-          
           <div class="hud-speed-actions">
             <button id="hdr-btn-advance-1m" class="btn btn-arcade-action btn-sm" type="button" title="Avançar simulação em 1 mês">
               ▶ +1 MÊS
@@ -366,25 +363,24 @@
             <input type="file" id="input-file-import" class="hidden" accept=".json">
             <button id="btn-new-world" class="btn btn-hud-system btn-hud-danger btn-sm" title="Iniciar um novo mundo">✕ Novo</button>
           </div>
-
         </div>
       </div>
     </header>
 
-    <!-- Barra de Navegação por Abas com Estilo Arcade Console -->
+    <!-- Barra de Navegação por Abas (Segmented Control) -->
     <nav class="app-nav game-hud-nav" aria-label="Navegação Principal do Jogo">
       <div class="nav-inner hud-nav-inner" role="tablist">
-        <button class="nav-tab-btn arcade-tab active" role="tab" aria-selected="true" data-tab="tab-city" id="tab-btn-city">
-          <span class="tab-led"></span> [1] MINHA CIDADE
+        <button class="nav-tab-btn active" role="tab" aria-selected="true" data-tab="tab-city" id="tab-btn-city">
+          <span class="tab-icon">🏙️</span> MINHA CIDADE
         </button>
-        <button class="nav-tab-btn arcade-tab" role="tab" aria-selected="false" data-tab="tab-world" id="tab-btn-world">
-          <span class="tab-led"></span> [2] CONTINENTE (20 CIDADES)
+        <button class="nav-tab-btn" role="tab" aria-selected="false" data-tab="tab-world" id="tab-btn-world">
+          <span class="tab-icon">🌐</span> CONTINENTE (20 CIDADES)
         </button>
-        <button class="nav-tab-btn arcade-tab" role="tab" aria-selected="false" data-tab="tab-compare" id="tab-btn-compare">
-          <span class="tab-led"></span> [3] COMPARADOR
+        <button class="nav-tab-btn" role="tab" aria-selected="false" data-tab="tab-compare" id="tab-btn-compare">
+          <span class="tab-icon">⚖️</span> COMPARADOR
         </button>
-        <button class="nav-tab-btn arcade-tab" role="tab" aria-selected="false" data-tab="tab-diary" id="tab-btn-diary">
-          <span class="tab-led"></span> [4] CRÔNICA HISTÓRICA
+        <button class="nav-tab-btn" role="tab" aria-selected="false" data-tab="tab-diary" id="tab-btn-diary">
+          <span class="tab-icon">📜</span> CRÔNICA HISTÓRICA
         </button>
       </div>
     </nav>
@@ -396,10 +392,7 @@
       <section id="tab-city" class="tab-content-panel" role="tabpanel" aria-labelledby="tab-btn-city">
         <div class="city-main-layout">
           <!-- Coluna Esquerda: Vista Pixel Art SVG e Perfil da Cidade -->
-          <div class="city-view-panel arcade-hud-box">
-            <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
-            <div class="box-corner-bl"></div><div class="box-corner-br"></div>
-
+          <div class="city-view-panel clean-hud-card">
             <div id="city-svg-container" class="city-svg-wrapper arcade-screen-frame">
               <!-- SVG da cidade em pixel art renderizado dinamicamente -->
             </div>
@@ -407,8 +400,8 @@
             <div class="city-meta-box">
               <div class="city-header-row">
                 <div>
-                  <h2 id="mycity-name" class="city-title arcade-title-sm">Nova Alvorada</h2>
-                  <p id="mycity-geospec" class="city-subtitle font-mono text-cyan-300">Planalto • Especialização em Tecnologia</p>
+                  <h2 id="mycity-name" class="city-title">Nova Alvorada</h2>
+                  <p id="mycity-geospec" class="city-subtitle font-mono">Planalto • Especialização em Tecnologia</p>
                 </div>
                 <div id="mycity-archetype">
                   <!-- Badge do arquétipo -->
@@ -417,59 +410,47 @@
 
               <!-- Indicadores KPI Rápidos -->
               <div class="city-kpi-grid">
-                <div class="kpi-box arcade-kpi-box">
-                  <span class="kpi-lbl font-mono">POPULAÇÃO TOTAL</span>
+                <div class="kpi-box">
+                  <span class="kpi-lbl font-mono">👥 POPULAÇÃO TOTAL</span>
                   <span id="mycity-population" class="kpi-val font-mono">450.000 hab</span>
                 </div>
-                <div class="kpi-box arcade-kpi-box">
-                  <span class="kpi-lbl font-mono">QUALIDADE DE VIDA</span>
+                <div class="kpi-box">
+                  <span class="kpi-lbl font-mono">💖 QUALIDADE DE VIDA</span>
                   <span id="mycity-qol" class="kpi-val font-mono text-cyan-400">55 / 100</span>
                 </div>
-                <div class="kpi-box arcade-kpi-box">
-                  <span class="kpi-lbl font-mono">CUSTO DE VIDA</span>
+                <div class="kpi-box">
+                  <span class="kpi-lbl font-mono">🏷️ CUSTO DE VIDA</span>
                   <span id="mycity-cost" class="kpi-val font-mono text-amber-400">48 pts</span>
                 </div>
               </div>
 
               <!-- Explicação Mensal em Linguagem Humana -->
-              <div class="city-monthly-explanation-box arcade-hud-well">
-                <h3 class="explanation-title font-mono">DINÂMICA DO MÊS</h3>
+              <div class="city-monthly-explanation-box">
+                <h3 class="explanation-title font-mono">💡 DINÂMICA DO MÊS</h3>
                 <p id="mycity-explanation" class="explanation-text">A comunidade operou dentro dos padrões normais de estabilidade.</p>
-              </div>
-
-              <!-- Botões de Controle Temporal na Cidade -->
-              <div class="city-time-controls">
-                <button id="btn-advance-1m" class="btn btn-arcade-action" type="button">
-                  ▶ Avançar 1 Mês
-                </button>
-                <button id="btn-advance-12m" class="btn btn-arcade-action-secondary" type="button">
-                  ⏩ Avançar 12 Meses
-                </button>
               </div>
             </div>
           </div>
 
           <!-- Coluna Direita: Painel Completo de Indicadores Sociais -->
-          <div class="indicators-panel arcade-hud-box">
-            <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
-            <div class="box-corner-bl"></div><div class="box-corner-br"></div>
-
-            <div class="panel-section-title arcade-section-title">
-              <span>INDICADORES SOCIAIS & ECONÔMICOS</span>
-              <span class="text-xs text-slate-400 font-mono">[ESCALA 0 - 100]</span>
+          <div class="indicators-panel clean-hud-card">
+            <div class="panel-section-title">
+              <div class="panel-title-group">
+                <span class="panel-title-text">INDICADORES SOCIAIS & ECONÔMICOS</span>
+                <span class="panel-subtitle-text font-mono">[ESCALA 0 A 100 • PASSE O MOUSE PARA DETALHES]</span>
+              </div>
             </div>
             <div id="mycity-indicators-grid" class="indicators-grid">
-              <!-- Renderizado dinamicamente com os 12 indicadores, barras e tendências -->
+              <!-- Renderizado dinamicamente com os 12 indicadores escaneáveis e tooltips -->
             </div>
           </div>
         </div>
 
         <!-- Acontecimentos Recentes da Cidade -->
-        <div class="city-events-panel arcade-hud-box mt-4">
-          <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
-          <div class="box-corner-bl"></div><div class="box-corner-br"></div>
-
-          <h3 class="panel-section-title arcade-section-title">ACONTECIMENTOS & DIRETRIZES RECENTES</h3>
+        <div class="city-events-panel clean-hud-card mt-4">
+          <div class="panel-section-title">
+            <span class="panel-title-text">ACONTECIMENTOS & DIRETRIZES RECENTES</span>
+          </div>
           <div id="mycity-recent-events" class="events-feed-list">
             <!-- Acontecimentos locais recentes -->
           </div>
@@ -478,7 +459,7 @@
 
       <!-- ABA 2: MUNDO (20 CIDADES) -->
       <section id="tab-world" class="tab-content-panel hidden" role="tabpanel" aria-labelledby="tab-btn-world">
-        <div class="world-toolbar arcade-hud-box mb-4">
+        <div class="world-toolbar clean-hud-card mb-4">
           <div class="world-filters-group">
             <label for="world-filter-archetype" class="text-xs text-slate-300 font-mono self-center">FILTRO:</label>
             <select id="world-filter-archetype" class="select-custom arcade-select">
@@ -507,12 +488,9 @@
         </div>
 
         <!-- Mapa Esquemático das 20 Cidades -->
-        <div class="world-map-wrapper arcade-hud-box">
-          <div class="box-corner-tl"></div><div class="box-corner-tr"></div>
-          <div class="box-corner-bl"></div><div class="box-corner-br"></div>
-
-          <h3 class="arcade-box-title mb-2">
-            <span class="title-led"></span> MAPA RADAR DO CONTINENTE [CLIQUE PARA INSPECIONAR OU MIGRAR]
+        <div class="world-map-wrapper clean-hud-card">
+          <h3 class="panel-title-text mb-2">
+            MAPA RADAR DO CONTINENTE [CLIQUE PARA INSPECIONAR OU MIGRAR]
           </h3>
           <div id="world-map-svg" class="arcade-map-frame">
             <!-- SVG Cartográfico renderizado dinamicamente -->
@@ -527,7 +505,7 @@
 
       <!-- ABA 3: COMPARAR CIDADES -->
       <section id="tab-compare" class="tab-content-panel hidden" role="tabpanel" aria-labelledby="tab-btn-compare">
-        <div class="compare-selector-bar arcade-hud-box">
+        <div class="compare-selector-bar clean-hud-card">
           <div>
             <label for="compare-city-a" class="form-label arcade-label">CIDADE 1:</label>
             <select id="compare-city-a" class="select-custom arcade-select w-full" style="width: 100%;"></select>
@@ -542,16 +520,16 @@
           </div>
         </div>
 
-        <div id="compare-table-container" class="arcade-hud-box mt-4">
+        <div id="compare-table-container" class="clean-hud-card mt-4">
           <!-- Tabela de Comparação renderizada dinamicamente -->
         </div>
       </section>
 
       <!-- ABA 4: DIÁRIO DO CIDADÃO -->
       <section id="tab-diary" class="tab-content-panel hidden" role="tabpanel" aria-labelledby="tab-btn-diary">
-        <div class="diary-toolbar arcade-hud-box">
-          <h2 class="arcade-box-title">
-            <span class="title-led"></span> CRÔNICA HISTÓRICA DO CIDADÃO
+        <div class="diary-toolbar clean-hud-card">
+          <h2 class="panel-title-text">
+            CRÔNICA HISTÓRICA DO CIDADÃO
           </h2>
           <div>
             <label for="diary-filter-type" class="text-xs text-slate-300 font-mono mr-2">CATEGORIA:</label>
